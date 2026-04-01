@@ -613,7 +613,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="admin-dashboard.php" class="sidebar-logo">
+                <a href="dashboard.php" class="sidebar-logo">
                     <i class="fas fa-hospital-user"></i>
                     <span>K&E Hospital</span>
                 </a>
