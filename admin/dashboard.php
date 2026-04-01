@@ -286,15 +286,15 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="appointments.php" class="nav-item">
+                <a href="Appointment.php" class="nav-item">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Appointments</span>
                 </a>
-                <a href="add-doctor.php" class="nav-item">
+                <a href="Adddoctor.php" class="nav-item">
                     <i class="fas fa-user-md"></i>
                     <span>Add Doctor</span>
                 </a>
-                <a href="doctors-list.php" class="nav-item">
+                <a href="doctorsList.php" class="nav-item">
                     <i class="fas fa-list"></i>
                     <span>Doctors List</span>
                 </a>
