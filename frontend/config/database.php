@@ -1,60 +1,40 @@
 <?php
-// K&E Hospital – Database Configuration
-// File location: C:\xampp\htdocs\KE-Hospital\config\database.php
+// Database configuration
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'ke_hospital');
+define('DB_USER', 'root');
+define('DB_PASS', '');
 
-$host     = 'localhost';
-$dbname   = 'ke_hospital';
-$username = 'root';
-$password = '';          // Change this if your MySQL has a password
+// Base URL configuration
+define('BASE_URL', 'http://localhost/KE-Hospital');
+define('ADMIN_URL', BASE_URL . '/admin');
+define('FRONTEND_URL', BASE_URL . '/frontend');
+
+// Upload paths
+define('UPLOAD_PATH', __DIR__ . '/../assets/uploads/');
+define('DOCTOR_UPLOAD_PATH', UPLOAD_PATH . 'doctors/');
+define('PATIENT_UPLOAD_PATH', UPLOAD_PATH . 'patients/');
 
 try {
     $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
-        $username,
-        $password,
+        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+        DB_USER,
+        DB_PASS,
         [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
+            PDO::ATTR_EMULATE_PREPARES => false
         ]
     );
-} catch (PDOException $e) {
-    // Show a friendly error — never expose raw DB errors in production
-    die('
-        <div style="
-            font-family: Outfit, sans-serif;
-            max-width: 500px;
-            margin: 80px auto;
-            padding: 32px;
-            border: 1px solid #fecaca;
-            border-radius: 12px;
-            background: #fef2f2;
-            color: #991b1b;
-            text-align: center;
-        ">
-            <h2 style="margin-bottom:12px;">Database Connection Failed</h2>
-            <p style="font-size:.9rem; color:#b91c1c;">
-                Could not connect to <strong>ke_hospital</strong> on <strong>localhost</strong>.<br><br>
-                ' . htmlspecialchars($e->getMessage()) . '
-            </p>
-            <p style="margin-top:16px; font-size:.82rem; color:#9ca3af;">
-                Make sure XAMPP MySQL is running and the database exists.
-            </p>
-        </div>
-    ');
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
 }
 
-// Also expose individual variables for files that use mysqli instead of PDO
-$db_host = $host;
-$db_name = $dbname;
-$db_user = $username;
-$db_pass = $password;
-
-// mysqli connection (used by some pages)
-$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
-if ($conn->connect_error) {
-    // Silent — pages that need $conn will handle their own errors
-    $conn = null;
-} else {
-    $conn->set_charset('utf8mb4');
+// Create upload directories if they don't exist
+if (!file_exists(DOCTOR_UPLOAD_PATH)) {
+    mkdir(DOCTOR_UPLOAD_PATH, 0777, true);
 }
+if (!file_exists(PATIENT_UPLOAD_PATH)) {
+    mkdir(PATIENT_UPLOAD_PATH, 0777, true);
+}
+?>
