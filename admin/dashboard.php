@@ -1,25 +1,12 @@
 <?php
-// K&E Hospital - Admin Dashboard (Simplified)
-session_start();
+// K&E Hospital - Admin Dashboard
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/auth.php';
 
 // Check if user is logged in and is admin
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
-    header('Location: ../frontend/login.php');
+if (!isLoggedIn() || !isAdmin()) {
+    header('Location: ' . FRONTEND_URL . '/login.php');
     exit();
-}
-
-// Database connection
-$host = 'localhost';
-$dbname = 'ke_hospital';
-$username = 'root';
-$password = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
 }
 
 // Get statistics
@@ -44,16 +31,9 @@ try {
     $stmt = $pdo->query("SELECT COUNT(*) as total FROM appointments WHERE appointment_date = CURDATE()");
     $today_appointments = $stmt->fetch()['total'];
     
-    // Monthly revenue (if payments table exists)
-    $monthly_revenue = 0;
-    try {
-        $stmt = $pdo->query("SELECT SUM(amount) as total FROM payments WHERE payment_status = 'Completed' AND MONTH(payment_date) = MONTH(CURRENT_DATE())");
-        $result = $stmt->fetch();
-        $monthly_revenue = $result['total'] ?? 0;
-    } catch(PDOException $e) {
-        // Payments table might not exist yet
-        $monthly_revenue = 0;
-    }
+    // Monthly revenue
+    $stmt = $pdo->query("SELECT SUM(amount) as total FROM payments WHERE payment_status = 'Completed' AND MONTH(payment_date) = MONTH(CURRENT_DATE())");
+    $monthly_revenue = $stmt->fetch()['total'] ?? 0;
     
     // Latest appointments
     $stmt = $pdo->query("
@@ -65,7 +45,9 @@ try {
             a.created_at,
             d.name as doctor_name,
             d.speciality,
-            u.full_name as patient_name
+            d.profile_image,
+            u.full_name as patient_name,
+            u.profile_image as patient_image
         FROM appointments a 
         JOIN doctors d ON a.doctor_id = d.doctor_id 
         JOIN users u ON a.user_id = u.user_id 
@@ -73,6 +55,38 @@ try {
         LIMIT 10
     ");
     $latest_appointments = $stmt->fetchAll();
+    
+    // Recent activity
+    $stmt = $pdo->query("
+        SELECT 
+            a.created_at,
+            u.full_name as patient_name,
+            d.name as doctor_name,
+            a.status,
+            a.appointment_date
+        FROM appointments a
+        JOIN users u ON a.user_id = u.user_id
+        JOIN doctors d ON a.doctor_id = d.doctor_id
+        ORDER BY a.created_at DESC
+        LIMIT 5
+    ");
+    $recent_activity = $stmt->fetchAll();
+    
+    // Doctor performance
+    $stmt = $pdo->query("
+        SELECT 
+            d.name,
+            d.speciality,
+            d.rating,
+            COUNT(a.appointment_id) as total_appointments,
+            COUNT(CASE WHEN a.status = 'Completed' THEN 1 END) as completed_appointments
+        FROM doctors d
+        LEFT JOIN appointments a ON d.doctor_id = a.doctor_id
+        GROUP BY d.doctor_id
+        ORDER BY completed_appointments DESC
+        LIMIT 5
+    ");
+    $top_doctors = $stmt->fetchAll();
     
 } catch (PDOException $e) {
     $total_appointments = 0;
@@ -82,6 +96,8 @@ try {
     $today_appointments = 0;
     $monthly_revenue = 0;
     $latest_appointments = [];
+    $recent_activity = [];
+    $top_doctors = [];
 }
 
 $admin_name = $_SESSION['full_name'] ?? 'Admin';
@@ -187,12 +203,6 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             font-weight: 600;
         }
 
-        .page-title p {
-            font-size: 0.875rem;
-            color: #6b7280;
-            margin-top: 0.25rem;
-        }
-
         .logout-btn {
             background: #ef4444;
             color: white;
@@ -224,7 +234,6 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             padding: 1.5rem;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             transition: all 0.3s;
-            cursor: pointer;
         }
 
         .stat-card:hover {
@@ -250,11 +259,6 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             margin-bottom: 0.25rem;
         }
 
-        .stat-label {
-            font-size: 0.875rem;
-            color: #6b7280;
-        }
-
         /* Tables */
         .appointments-section {
             background: white;
@@ -269,25 +273,6 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .section-header h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #1f2937;
-        }
-
-        .view-all {
-            color: #3b82f6;
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .view-all:hover {
-            text-decoration: underline;
         }
 
         .appointments-table {
@@ -309,11 +294,6 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             background: #f9fafb;
             font-weight: 600;
             color: #6b7280;
-            font-size: 0.875rem;
-        }
-
-        td {
-            font-size: 0.875rem;
         }
 
         .status-badge {
@@ -329,72 +309,19 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         .status-completed { background: #e0e7ff; color: #4338ca; }
         .status-cancelled { background: #fee2e2; color: #dc2626; }
 
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #6b7280;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
-                position: fixed;
-                z-index: 1000;
             }
-            
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            
             .main-content {
                 margin-left: 0;
             }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .mobile-menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.25rem;
-            cursor: pointer;
-            margin-right: 1rem;
-        }
-
-        @media (max-width: 768px) {
-            .mobile-menu-toggle {
-                display: block;
-            }
-        }
-
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-            display: none;
-        }
-        
-        .sidebar-overlay.active {
-            display: block;
         }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar">
             <div class="sidebar-header">
                 <a href="dashboard.php" class="sidebar-logo">
                     <i class="fas fa-hospital-user"></i>
@@ -424,15 +351,10 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                 </a>
             </nav>
         </aside>
-        
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <main class="main-content">
             <div class="top-bar">
                 <div class="page-title">
-                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
-                        <i class="fas fa-bars"></i>
-                    </button>
                     <h1>Dashboard</h1>
                     <p>Welcome back, <?= htmlspecialchars($admin_name) ?>!</p>
                 </div>
@@ -442,43 +364,43 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card" onclick="window.location.href='appointments.php'">
+                <div class="stat-card">
                     <div class="stat-header">
                         <span class="stat-value"><?= $total_appointments ?></span>
                         <i class="fas fa-calendar-check" style="color: #3b82f6;"></i>
                     </div>
-                    <div class="stat-label">Total Appointments</div>
+                    <div>Total Appointments</div>
                 </div>
                 
-                <div class="stat-card" onclick="window.location.href='doctors-list.php'">
+                <div class="stat-card">
                     <div class="stat-header">
                         <span class="stat-value"><?= $total_doctors ?></span>
                         <i class="fas fa-user-md" style="color: #10b981;"></i>
                     </div>
-                    <div class="stat-label">Total Doctors</div>
+                    <div>Total Doctors</div>
                 </div>
                 
-                <div class="stat-card" onclick="window.location.href='patients.php'">
+                <div class="stat-card">
                     <div class="stat-header">
                         <span class="stat-value"><?= $total_patients ?></span>
                         <i class="fas fa-users" style="color: #8b5cf6;"></i>
                     </div>
-                    <div class="stat-label">Total Patients</div>
+                    <div>Total Patients</div>
                 </div>
                 
-                <div class="stat-card" onclick="window.location.href='appointments.php?status=pending'">
+                <div class="stat-card">
                     <div class="stat-header">
-                        <span class="stat-value"><?= $pending_appointments ?></span>
-                        <i class="fas fa-clock" style="color: #f59e0b;"></i>
+                        <span class="stat-value">$<?= number_format($monthly_revenue, 2) ?></span>
+                        <i class="fas fa-dollar-sign" style="color: #f59e0b;"></i>
                     </div>
-                    <div class="stat-label">Pending Appointments</div>
+                    <div>Monthly Revenue</div>
                 </div>
             </div>
 
             <div class="appointments-section">
                 <div class="section-header">
                     <h2><i class="fas fa-clock"></i> Latest Appointments</h2>
-                    <a href="appointments.php" class="view-all">View All →</a>
+                    <a href="appointments.php" class="view-all" style="color: #3b82f6;">View All →</a>
                 </div>
                 
                 <?php if (count($latest_appointments) > 0): ?>
@@ -488,7 +410,6 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                                 <tr>
                                     <th>Patient</th>
                                     <th>Doctor</th>
-                                    <th>Speciality</th>
                                     <th>Date & Time</th>
                                     <th>Status</th>
                                 </tr>
@@ -496,9 +417,8 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                             <tbody>
                                 <?php foreach ($latest_appointments as $appointment): ?>
                                     <tr>
-                                        <td><strong><?= htmlspecialchars($appointment['patient_name']) ?></strong></td>
+                                        <td><?= htmlspecialchars($appointment['patient_name']) ?></td>
                                         <td><?= htmlspecialchars($appointment['doctor_name']) ?></td>
-                                        <td><?= htmlspecialchars($appointment['speciality']) ?></td>
                                         <td>
                                             <?= date('M d, Y', strtotime($appointment['appointment_date'])) ?><br>
                                             <small><?= date('h:i A', strtotime($appointment['appointment_time'])) ?></small>
@@ -514,54 +434,10 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                         </table>
                     </div>
                 <?php else: ?>
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-alt"></i>
-                        <p>No appointments found.</p>
-                    </div>
+                    <p>No appointments found.</p>
                 <?php endif; ?>
             </div>
         </main>
     </div>
-
-    <script>
-        // Mobile menu functionality
-        const mobileToggle = document.getElementById('mobileMenuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        
-        function closeMenu() {
-            sidebar.classList.remove('open');
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        
-        function openMenu() {
-            sidebar.classList.add('open');
-            overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        if (mobileToggle) {
-            mobileToggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (sidebar.classList.contains('open')) {
-                    closeMenu();
-                } else {
-                    openMenu();
-                }
-            });
-        }
-        
-        if (overlay) {
-            overlay.addEventListener('click', closeMenu);
-        }
-        
-        // Close menu on window resize if screen becomes larger
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768 && sidebar.classList.contains('open')) {
-                closeMenu();
-            }
-        });
-    </script>
 </body>
 </html>
