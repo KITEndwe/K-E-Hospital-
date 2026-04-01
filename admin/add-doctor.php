@@ -571,29 +571,29 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="admin-dashboard.php" class="sidebar-logo">
+                <a href="dashboard.php" class="sidebar-logo">
                     <i class="fas fa-hospital-user"></i>
                     <span>K&E Hospital</span>
                 </a>
             </div>
             <nav class="sidebar-nav">
-                <a href="admin-dashboard.php" class="nav-item">
+                <a href="dashboard.php" class="nav-item">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="admin-appointments.php" class="nav-item">
+                <a href="appointments.php" class="nav-item">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Appointments</span>
                 </a>
-                <a href="admin-add-doctor.php" class="nav-item active">
+                <a href="add-doctor.php" class="nav-item active">
                     <i class="fas fa-user-md"></i>
                     <span>Add Doctor</span>
                 </a>
-                <a href="admin-doctors-list.php" class="nav-item">
+                <a href="doctors-list.php" class="nav-item">
                     <i class="fas fa-list"></i>
                     <span>Doctors List</span>
                 </a>
-                <a href="admin-patients.php" class="nav-item">
+                <a href="patients.php" class="nav-item">
                     <i class="fas fa-users"></i>
                     <span>Patients</span>
                 </a>
