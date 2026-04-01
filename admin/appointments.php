@@ -3,28 +3,22 @@
 session_start();
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
-    header('Location: login.php');
+    header('Location: ../frontend/login.php');
     exit();
 }
 
-$db_found = false;
-$db_paths = [
-    __DIR__ . '/../config/database.php',
-    __DIR__ . '/config/database.php',
-    $_SERVER['DOCUMENT_ROOT'] . '/KE-Hospital/config/database.php',
-    '../config/database.php'
-];
+// Database connection
+$host = 'localhost';
+$dbname = 'ke_hospital';
+$username = 'root';
+$password = '';
 
-foreach ($db_paths as $path) {
-    if (file_exists($path)) {
-        require_once $path;
-        $db_found = true;
-        break;
-    }
-}
-
-if (!$db_found) {
-    die('Database configuration file not found. Please check your installation.');
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
 }
 
 $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
@@ -89,10 +83,18 @@ $cancelled_count = 0;
 
 foreach ($appointments as $app) {
     switch($app['status']) {
-        case 'Pending': $pending_count++; break;
-        case 'Confirmed': $confirmed_count++; break;
-        case 'Completed': $completed_count++; break;
-        case 'Cancelled': $cancelled_count++; break;
+        case 'Pending': 
+            $pending_count++; 
+            break;
+        case 'Confirmed': 
+            $confirmed_count++; 
+            break;
+        case 'Completed': 
+            $completed_count++; 
+            break;
+        case 'Cancelled': 
+            $cancelled_count++; 
+            break;
     }
 }
 
@@ -121,7 +123,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             min-height: 100vh;
         }
 
-        /* ── SIDEBAR (dashboard style) ── */
+        /* Sidebar */
         .sidebar {
             width: 280px;
             background: white;
@@ -179,7 +181,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
 
         .nav-item i { width: 24px; font-size: 1.1rem; }
 
-        /* ── MAIN CONTENT ── */
+        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -524,9 +526,9 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         <div class="table-container">
             <?php if (count($appointments) > 0): ?>
                 <div class="appointments-table">
-                    <table>
+                     <table>
                         <thead>
-                            <tr>
+                             <tr>
                                 <th>#</th>
                                 <th>Patient</th>
                                 <th>Doctor</th>
@@ -535,12 +537,12 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                                 <th>Fees</th>
                                 <th>Status</th>
                                 <th>Actions</th>
-                            </tr>
+                             </tr>
                         </thead>
                         <tbody>
                             <?php $counter = 1; ?>
                             <?php foreach ($appointments as $appointment): ?>
-                                <tr>
+                                 <tr>
                                     <td><?php echo $counter++; ?></td>
                                     <td>
                                         <div class="patient-info">
@@ -581,19 +583,27 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                                     <td>
                                         <?php
                                         $status = $appointment['status'];
-                                        $statusClass = match($status) {
-                                            'Pending'   => 'status-pending',
-                                            'Confirmed' => 'status-confirmed',
-                                            'Completed' => 'status-completed',
-                                            'Cancelled' => 'status-cancelled',
-                                            default     => ''
-                                        };
+                                        $statusClass = '';
+                                        switch($status) {
+                                            case 'Pending':
+                                                $statusClass = 'status-pending';
+                                                break;
+                                            case 'Confirmed':
+                                                $statusClass = 'status-confirmed';
+                                                break;
+                                            case 'Completed':
+                                                $statusClass = 'status-completed';
+                                                break;
+                                            case 'Cancelled':
+                                                $statusClass = 'status-cancelled';
+                                                break;
+                                        }
                                         ?>
                                         <span class="status-badge <?php echo $statusClass; ?>"><?php echo $status; ?></span>
                                     </td>
                                     <td>
                                         <div class="action-buttons">
-                                            <a href="admin-appointment-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="action-btn" title="View Details">
+                                            <a href="appointment-details.php?id=<?php echo $appointment['appointment_id']; ?>" class="action-btn" title="View Details">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <button class="action-btn delete" onclick="deleteAppointment(<?php echo $appointment['appointment_id']; ?>)" title="Delete">
@@ -601,10 +611,10 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                                             </button>
                                         </div>
                                     </td>
-                                </tr>
+                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
-                    </table>
+                     </table>
                 </div>
             <?php else: ?>
                 <div class="empty-state">
@@ -624,13 +634,30 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
     function closeMenu() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
     function openMenu()  { sidebar.classList.add('open');    overlay.classList.add('active');    }
 
-    mobileToggle?.addEventListener('click', e => { e.stopPropagation(); sidebar.classList.contains('open') ? closeMenu() : openMenu(); });
-    overlay?.addEventListener('click', closeMenu);
-    window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMenu(); });
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', function(e) { 
+            e.stopPropagation(); 
+            if (sidebar.classList.contains('open')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', closeMenu);
+    }
+    
+    window.addEventListener('resize', function() { 
+        if (window.innerWidth > 768 && sidebar.classList.contains('open')) {
+            closeMenu();
+        }
+    });
 
     function deleteAppointment(id) {
         if (confirm('Are you sure you want to delete this appointment?')) {
-            window.location.href = 'admin-delete-appointment.php?id=' + id;
+            window.location.href = 'delete-appointment.php?id=' + id;
         }
     }
 </script>
