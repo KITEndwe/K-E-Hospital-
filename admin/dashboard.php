@@ -1,25 +1,12 @@
 <?php
 // K&E Hospital - Admin Dashboard
-session_start();
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/auth.php';
 
 // Check if user is logged in and is admin
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
-    header('Location: ../frontend/login.php');
+if (!isLoggedIn() || !isAdmin()) {
+    header('Location: ' . FRONTEND_URL . '/login.php');
     exit();
-}
-
-// Database connection
-$host = 'localhost';
-$dbname = 'ke_hospital';
-$username = 'root';
-$password = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
 }
 
 // Get statistics
@@ -44,6 +31,10 @@ try {
     $stmt = $pdo->query("SELECT COUNT(*) as total FROM appointments WHERE appointment_date = CURDATE()");
     $today_appointments = $stmt->fetch()['total'];
     
+    // Monthly revenue
+    $stmt = $pdo->query("SELECT SUM(amount) as total FROM payments WHERE payment_status = 'Completed' AND MONTH(payment_date) = MONTH(CURRENT_DATE())");
+    $monthly_revenue = $stmt->fetch()['total'] ?? 0;
+    
     // Latest appointments
     $stmt = $pdo->query("
         SELECT 
@@ -51,16 +42,51 @@ try {
             a.appointment_date,
             a.appointment_time,
             a.status,
+            a.created_at,
             d.name as doctor_name,
             d.speciality,
-            u.full_name as patient_name
+            d.profile_image,
+            u.full_name as patient_name,
+            u.profile_image as patient_image
         FROM appointments a 
         JOIN doctors d ON a.doctor_id = d.doctor_id 
         JOIN users u ON a.user_id = u.user_id 
         ORDER BY a.created_at DESC 
-        LIMIT 5
+        LIMIT 10
     ");
     $latest_appointments = $stmt->fetchAll();
+    
+    // Recent activity
+    $stmt = $pdo->query("
+        SELECT 
+            a.created_at,
+            u.full_name as patient_name,
+            d.name as doctor_name,
+            a.status,
+            a.appointment_date
+        FROM appointments a
+        JOIN users u ON a.user_id = u.user_id
+        JOIN doctors d ON a.doctor_id = d.doctor_id
+        ORDER BY a.created_at DESC
+        LIMIT 5
+    ");
+    $recent_activity = $stmt->fetchAll();
+    
+    // Doctor performance
+    $stmt = $pdo->query("
+        SELECT 
+            d.name,
+            d.speciality,
+            d.rating,
+            COUNT(a.appointment_id) as total_appointments,
+            COUNT(CASE WHEN a.status = 'Completed' THEN 1 END) as completed_appointments
+        FROM doctors d
+        LEFT JOIN appointments a ON d.doctor_id = a.doctor_id
+        GROUP BY d.doctor_id
+        ORDER BY completed_appointments DESC
+        LIMIT 5
+    ");
+    $top_doctors = $stmt->fetchAll();
     
 } catch (PDOException $e) {
     $total_appointments = 0;
@@ -68,7 +94,10 @@ try {
     $total_patients = 0;
     $pending_appointments = 0;
     $today_appointments = 0;
+    $monthly_revenue = 0;
     $latest_appointments = [];
+    $recent_activity = [];
+    $top_doctors = [];
 }
 
 $admin_name = $_SESSION['full_name'] ?? 'Admin';
@@ -99,6 +128,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             min-height: 100vh;
         }
 
+        /* Sidebar */
         .sidebar {
             width: 280px;
             background: white;
@@ -106,6 +136,8 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             position: fixed;
             height: 100vh;
             overflow-y: auto;
+            transition: all 0.3s;
+            z-index: 100;
         }
 
         .sidebar-header {
@@ -147,12 +179,14 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             width: 24px;
         }
 
+        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 280px;
             padding: 1.5rem;
         }
 
+        /* Top Bar */
         .top-bar {
             background: white;
             border-radius: 1rem;
@@ -186,6 +220,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             transform: translateY(-1px);
         }
 
+        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -198,6 +233,12 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             border-radius: 1rem;
             padding: 1.5rem;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
         .stat-header {
@@ -215,8 +256,10 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         .stat-value {
             font-size: 2rem;
             font-weight: 700;
+            margin-bottom: 0.25rem;
         }
 
+        /* Tables */
         .appointments-section {
             background: white;
             border-radius: 1rem;
@@ -230,6 +273,10 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
+        }
+
+        .appointments-table {
+            overflow-x: auto;
         }
 
         table {
@@ -286,15 +333,15 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="Appointment.php" class="nav-item">
+                <a href="appointments.php" class="nav-item">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Appointments</span>
                 </a>
-                <a href="Adddoctor.php" class="nav-item">
+                <a href="add-doctor.php" class="nav-item">
                     <i class="fas fa-user-md"></i>
                     <span>Add Doctor</span>
                 </a>
-                <a href="doctorsList.php" class="nav-item">
+                <a href="doctors-list.php" class="nav-item">
                     <i class="fas fa-list"></i>
                     <span>Doctors List</span>
                 </a>
@@ -343,49 +390,49 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                 
                 <div class="stat-card">
                     <div class="stat-header">
-                        <span class="stat-value"><?= $pending_appointments ?></span>
-                        <i class="fas fa-clock" style="color: #f59e0b;"></i>
+                        <span class="stat-value">$<?= number_format($monthly_revenue, 2) ?></span>
+                        <i class="fas fa-dollar-sign" style="color: #f59e0b;"></i>
                     </div>
-                    <div>Pending Appointments</div>
+                    <div>Monthly Revenue</div>
                 </div>
             </div>
 
             <div class="appointments-section">
                 <div class="section-header">
                     <h2><i class="fas fa-clock"></i> Latest Appointments</h2>
-                    <a href="appointments.php" style="color: #3b82f6;">View All →</a>
+                    <a href="appointments.php" class="view-all" style="color: #3b82f6;">View All →</a>
                 </div>
                 
                 <?php if (count($latest_appointments) > 0): ?>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Patient</th>
-                                <th>Doctor</th>
-                                <th>Speciality</th>
-                                <th>Date & Time</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($latest_appointments as $appointment): ?>
+                    <div class="appointments-table">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td><?= htmlspecialchars($appointment['patient_name']) ?></td>
-                                    <td><?= htmlspecialchars($appointment['doctor_name']) ?></td>
-                                    <td><?= htmlspecialchars($appointment['speciality']) ?></td>
-                                    <td>
-                                        <?= date('M d, Y', strtotime($appointment['appointment_date'])) ?><br>
-                                        <small><?= date('h:i A', strtotime($appointment['appointment_time'])) ?></small>
-                                    </td>
-                                    <td>
-                                        <span class="status-badge status-<?= strtolower($appointment['status']) ?>">
-                                            <?= $appointment['status'] ?>
-                                        </span>
-                                    </td>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($latest_appointments as $appointment): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($appointment['patient_name']) ?></td>
+                                        <td><?= htmlspecialchars($appointment['doctor_name']) ?></td>
+                                        <td>
+                                            <?= date('M d, Y', strtotime($appointment['appointment_date'])) ?><br>
+                                            <small><?= date('h:i A', strtotime($appointment['appointment_time'])) ?></small>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-<?= strtolower($appointment['status']) ?>">
+                                                <?= $appointment['status'] ?>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 <?php else: ?>
                     <p>No appointments found.</p>
                 <?php endif; ?>
