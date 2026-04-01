@@ -3,27 +3,23 @@
 session_start();
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
-    header('Location: login.php');
+    header('Location: ../frontend/login.php');
     exit();
 }
 
-$db_found = false;
-$db_paths = [
-    __DIR__ . '/../config/database.php',
-    __DIR__ . '/config/database.php',
-    $_SERVER['DOCUMENT_ROOT'] . '/KE-Hospital/config/database.php',
-    '../config/database.php'
-];
+// Database connection - Direct connection without requiring external config
+$host = 'localhost';
+$dbname = 'ke_hospital';
+$username = 'root';
+$password = '';
 
-foreach ($db_paths as $path) {
-    if (file_exists($path)) {
-        require_once $path;
-        $db_found = true;
-        break;
-    }
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
 }
-
-if (!$db_found) die('Database configuration file not found.');
 
 $speciality_filter   = isset($_GET['speciality'])   ? $_GET['speciality']   : '';
 $availability_filter = isset($_GET['availability']) ? $_GET['availability'] : '';
@@ -32,11 +28,19 @@ $search              = isset($_GET['search'])        ? $_GET['search']        : 
 $sql    = "SELECT * FROM doctors WHERE 1=1";
 $params = [];
 
-if (!empty($speciality_filter)) { $sql .= " AND speciality = ?"; $params[] = $speciality_filter; }
-if ($availability_filter !== '') { $sql .= " AND is_available = ?"; $params[] = ($availability_filter == 'available') ? 1 : 0; }
+if (!empty($speciality_filter)) { 
+    $sql .= " AND speciality = ?"; 
+    $params[] = $speciality_filter; 
+}
+if ($availability_filter !== '') { 
+    $sql .= " AND is_available = ?"; 
+    $params[] = ($availability_filter == 'available') ? 1 : 0; 
+}
 if (!empty($search)) {
     $sql .= " AND (name LIKE ? OR speciality LIKE ? OR degree LIKE ?)";
-    $params[] = "%$search%"; $params[] = "%$search%"; $params[] = "%$search%";
+    $params[] = "%$search%"; 
+    $params[] = "%$search%"; 
+    $params[] = "%$search%";
 }
 
 $sql .= " ORDER BY name ASC";
@@ -53,7 +57,11 @@ $available_count   = 0;
 $unavailable_count = 0;
 
 foreach ($doctors as $doc) {
-    $doc['is_available'] ? $available_count++ : $unavailable_count++;
+    if ($doc['is_available']) {
+        $available_count++;
+    } else {
+        $unavailable_count++;
+    }
 }
 
 $admin_name = $_SESSION['full_name'] ?? 'Admin';
@@ -401,7 +409,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         <?php if (count($doctors) > 0): ?>
             <div class="doctors-grid">
                 <?php foreach ($doctors as $doctor): ?>
-                    <div class="doctor-card" onclick="window.location.href='admin-doctor-details.php?id=<?php echo $doctor['doctor_id']; ?>'">
+                    <div class="doctor-card" onclick="window.location.href='doctor-details.php?id=<?php echo $doctor['doctor_id']; ?>'">
                         <img src="<?php echo htmlspecialchars($doctor['profile_image'] ?: '/assets/doctors/default-doctor.png'); ?>"
                              class="doctor-image"
                              alt="<?php echo htmlspecialchars($doctor['name']); ?>"
@@ -429,7 +437,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                                 <?php endif; ?>
                             </div>
                             <div class="action-buttons" onclick="event.stopPropagation()">
-                                <a href="admin-edit-doctor.php?id=<?php echo $doctor['doctor_id']; ?>" class="action-btn edit">
+                                <a href="edit-doctor.php?id=<?php echo $doctor['doctor_id']; ?>" class="action-btn edit">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
                                 <button class="action-btn delete" onclick="deleteDoctor('<?php echo $doctor['doctor_id']; ?>')">
@@ -457,16 +465,40 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
 
-    function closeMenu() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
-    function openMenu()  { sidebar.classList.add('open');    overlay.classList.add('active');    }
+    function closeMenu() { 
+        if (sidebar) sidebar.classList.remove('open'); 
+        if (overlay) overlay.classList.remove('active'); 
+    }
+    
+    function openMenu() { 
+        if (sidebar) sidebar.classList.add('open');    
+        if (overlay) overlay.classList.add('active');    
+    }
 
-    mobileToggle?.addEventListener('click', e => { e.stopPropagation(); sidebar.classList.contains('open') ? closeMenu() : openMenu(); });
-    overlay?.addEventListener('click', closeMenu);
-    window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMenu(); });
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', function(e) { 
+            e.stopPropagation(); 
+            if (sidebar && sidebar.classList.contains('open')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', closeMenu);
+    }
+    
+    window.addEventListener('resize', function() { 
+        if (window.innerWidth > 768 && sidebar && sidebar.classList.contains('open')) {
+            closeMenu();
+        }
+    });
 
     function deleteDoctor(doctorId) {
         if (confirm('Are you sure you want to delete this doctor? This action cannot be undone.')) {
-            window.location.href = 'admin-delete-doctor.php?id=' + doctorId;
+            window.location.href = 'delete-doctor.php?id=' + doctorId;
         }
     }
 </script>
