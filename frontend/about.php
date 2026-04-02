@@ -298,15 +298,16 @@
 ═══════════════════════════════════════════════════════════ -->
 <header class="navbar">
     <div class="container navbar__inner">
-        <a href="index.php" >
-            <div >
-                <img src="assets/logo.svg" width="300" height="150" style="margin-top: 30px;" /><path d="M2 17l10 5 10-5M2 12l10 5 10-5" alt="">
+        <a href="index.php" class="navbar__logo">
+            <div class="navbar__logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             </div>
+            Prescripto
         </a>
 
         <nav class="navbar__nav">
             <a href="index.php">HOME</a>
-            <a href="Alldoctors.php">ALL DOCTORS</a>
+            <a href="doctors.php">ALL DOCTORS</a>
             <a href="about.php" class="active">ABOUT</a>
             <a href="contact.php">CONTACT</a>
         </nav>
@@ -330,7 +331,7 @@
             <!-- Image -->
             <div class="about__image-wrap fade-up delay-1">
                 <img
-                    src="assets/about_image.png"
+                    src="frontend/assets/images/about-doctors.png"
                     alt="Prescripto Doctors"
                     onerror="
                         this.style.display='none';
@@ -410,47 +411,43 @@
 <!-- ═══════════════════════════════════════════════════════════
      FOOTER
 ═══════════════════════════════════════════════════════════ -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer__grid">
-                <!-- Brand col -->
-                <div>
-                    <div class="footer__brand">
-                        <div  style="width:150px;height:100px;">
-                            <img src="assets/logo.svg" alt="">
-
-                        </div>
-                    
+<footer class="footer">
+    <div class="container">
+        <div class="footer__grid">
+            <div>
+                <div class="footer__brand">
+                    <div class="navbar__logo-icon" style="width:30px;height:30px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                     </div>
-                    <p class="footer__desc">Your Health, Our Priority Bridging the Gap Between Zambian Patients and Doctors with Quality Healthcare at Your Fingertips, Anywhere in Zambia.</p>
+                    Prescripto
                 </div>
-
-                <!-- Company col -->
-                <div>
-                    <h4 class="footer__heading">COMPANY</h4>
-                    <ul class="footer__links">
-                        <li><a href="index.php">Home</a></li>
-                        <li><a href="about.php">About us</a></li>
-                        <li><a href="contact.php">Contact us</a></li>
-                        <li><a href="privacy.php">Privacy policy</a></li>
-                    </ul>
-                </div>
-
-                <!-- Get in touch col -->
-                <div>
-                    <h4 class="footer__heading">GET IN TOUCH</h4>
-                    <div class="footer__contact">
-                        <p>+260-7610-16446</p>
-                        <p>elijahmwange55@gmail.com</p>
-                    </div>
-                </div>
+                <p class="footer__desc">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
             </div>
 
-            <div class="footer__bottom">
-                <p>Copyright &copy; <?= date('Y') ?> KE-Hospital – All Right Reserved.</p>
+            <div>
+                <h4 class="footer__heading">COMPANY</h4>
+                <ul class="footer__links">
+                    <li><a href="index.php">Home</a></li>
+                    <li><a href="about.php">About us</a></li>
+                    <li><a href="contact.php">Contact us</a></li>
+                    <li><a href="privacy.php">Privacy policy</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer__heading">GET IN TOUCH</h4>
+                <div class="footer__contact">
+                    <p>+1-212-456-7890</p>
+                    <p>greatstackdev@gmail.com</p>
+                </div>
             </div>
         </div>
-    </footer>
+
+        <div class="footer__bottom">
+            <p>Copyright &copy; <?= date('Y') ?> GreatStack – All Right Reserved.</p>
+        </div>
+    </div>
+</footer>
 
 </body>
 </html>

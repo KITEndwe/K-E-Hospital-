@@ -1,0 +1,77 @@
+[33mcommit bb540a5dd471c88fb1a095fe6b5deaa05942014d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mbackup-main[m[33m)[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Wed Apr 1 21:26:17 2026 +0200
+
+    fix dashboard
+
+[33mcommit 35e7856dd7be8baa3a6fd51ee0279521f3353a58[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Wed Apr 1 20:50:05 2026 +0200
+
+    Added fix_admin_password.php and updated dashboard/index
+
+[33mcommit d30f262de22dcf6dd3da3102d99f8e2b59b7e893[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Wed Apr 1 20:32:54 2026 +0200
+
+    Added fix_admin_password.php and updated dashboard/index
+
+[33mcommit 48ac4ef32409a5de3d72e4285b59df203f87a1ce[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Wed Apr 1 16:48:08 2026 +0200
+
+    fix logout
+
+[33mcommit 48b0578e60ae8663a43bec58380dcb7fdd1ab23e[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Wed Apr 1 16:39:09 2026 +0200
+
+    Modified the following files: addDoctor,appointment, and doctors-list
+
+[33mcommit eb6384175aa21b1bea8f0194f0304633653889af[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Wed Apr 1 16:25:20 2026 +0200
+
+    Added doctors list
+
+[33mcommit 805621ac0c93bb449e939eabce6f8c875bf7b304[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Wed Apr 1 16:19:55 2026 +0200
+
+    Added fix_admin_password.php and updated dashboard/index
+
+[33mcommit 5a64ac31c5d6676217d1942b19958bb3ccaf2481[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Wed Apr 1 16:16:33 2026 +0200
+
+    Added updated dashboard/index
+
+[33mcommit 3d5209ab9442db3f30d5014dfd06b2609bc51658[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Wed Apr 1 16:02:43 2026 +0200
+
+    Added fix_admin files
+
+[33mcommit e295f14c6065a1eba8716b6269915401bfafa56d[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Wed Apr 1 15:41:59 2026 +0200
+
+    Added fix_admin_password.php and updated dashboard/index
+
+[33mcommit ecde829336f6d4a408bd6e01543b7184a49d3c20[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Wed Apr 1 15:10:51 2026 +0200
+
+    Updated admin dashboard and some files from admin pages
+
+[33mcommit 7991aaa61591f75b43efdc6d5ed5e364f137c070[m
+Author: KITEndwe <elijahmwange55@.com>
+Date:   Mon Mar 30 11:15:21 2026 +0200
+
+    changes on frontend files: Alldoctors,contact
+
+[33mcommit 5b14e1801a098833d2a0312c1770844d1c97cd65[m
+Author: KITENDWE MWANGE ELIE <124403595+KITEndwe@users.noreply.github.com>
+Date:   Sun Mar 29 21:24:23 2026 +0200
+
+    Add files via upload

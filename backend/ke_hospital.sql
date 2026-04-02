@@ -255,7 +255,7 @@ INSERT INTO doctor_schedule (doctor_id, day_of_week, start_time, end_time) VALUE
 -- Note: In production, always hash passwords using bcrypt
 -- The password 'admin123' hashed with bcrypt would look like: $2b$10$YourHashedPasswordHere
 INSERT INTO admin (full_name, email, password, role, profile_image, phone) VALUES
-('Elijah Mwange', 'admin@kehospital.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Super Admin', '/admin/assets/doctor_icon.svg', '+260 761016446');
+('K&E Hospital Admin', 'admin@kehospital.com', '$2b$10$YourHashedPasswordHere', 'Super Admin', '/assets/admin/admin-avatar.jpg', '+260 123 456789');
 
 -- =============================================
 -- TRIGGERS FOR AUTOMATIC UPDATES
