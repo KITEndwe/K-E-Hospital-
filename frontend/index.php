@@ -424,7 +424,7 @@ img { display:block; max-width:100%; }
 }
 .btn-cta:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.18); }
 .cta-img {
-    height:210px; position:relative; z-index:2;
+    height:410px; position:relative; z-index:2;
     object-fit:contain;
     filter:drop-shadow(0 12px 24px rgba(0,0,0,0.2));
 }
@@ -535,8 +535,8 @@ footer {
 <!-- ═════════════ NAVBAR ═════════════ -->
 <nav class="navbar">
 
-    <a href="index.php" class="nav-logo">
-        <div class="nav-logo-icon"><img src="assets/logo.svg" alt=""></div>
+    <a href="index.php">
+        <div ><img src="assets/logo.svg" style="width: 100px  ;" alt=""></div>
        
     </a>
 
@@ -553,7 +553,7 @@ footer {
                 <div class="user-avatar"><?php echo strtoupper(substr($user_name,0,1)); ?></div>
                 <span><?php echo htmlspecialchars($user_name); ?></span>
             </div>
-            <a href="frontend/logout.php" class="btn-logout-sm">Logout</a>
+            <a href="logout.php" class="btn-logout-sm">Logout</a>
         <?php else: ?>
             <a href="frontend/login.php"    class="btn-nav-login">Login</a>
             <a href="frontend/register.php" class="btn-nav-create">Create account</a>
@@ -692,9 +692,9 @@ footer {
 <footer>
     <div class="footer-grid">
         <div>
-            <div class="footer-logo">
-                <div class="f-icon"><img src="assets/logo.svg" alt=""></div>
-                K&amp;E Hospital
+            <div >
+                <div ><img src="assets/logo.svg" style="width: 100px;" alt=""></div>
+                
             </div>
             <p class="footer-desc">Your Health, Our Priority Bridging the Gap Between Zambian Patients and Doctors with Quality Healthcare at Your Fingertips, Anywhere in Zambia.</p>
         </div>
@@ -712,8 +712,8 @@ footer {
         <div class="footer-col">
             <h4>Get In Touch</h4>
             <ul>
-                <li>+1-212-456-7890</li>
-                <li>info@kehospital.co.zm</li>
+                <li>+260 7610 16446</li>
+                <li>admin@kehospital.co.zm</li>
             </ul>
         </div>
     </div>
