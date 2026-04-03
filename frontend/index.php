@@ -686,7 +686,8 @@ $user_name    = $_SESSION['full_name'] ?? '';
     <div class="doctors-grid stagger">
         <?php foreach ($doctors as $doc):
             $img_fallback = "https://placehold.co/400x500/DBEAFE/3B82F6?text=" . urlencode($doc['name']);
-            $initials     = implode('', array_map(fn($w) => strtoupper($w[0]), array_slice(explode(' ', $doc['name']), -2)));
+            $name_parts = array_slice(explode(' ', $doc['name']), -2);
+            $initials   = implode('', array_map(function($w) { return strtoupper($w[0]); }, $name_parts));
         ?>
         <a href="frontend/appointment.php?doctor=<?php echo urlencode($doc['doctor_id']); ?>" class="doctor-card fade-up">
             <div class="doctor-img-wrap">
