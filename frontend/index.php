@@ -536,15 +536,15 @@ footer {
 <nav class="navbar">
 
     <a href="index.php" class="nav-logo">
-        <div class="nav-logo-icon"><i class="fas fa-hospital-user"></i></div>
-        K&amp;E Hospital
+        <div class="nav-logo-icon"><img src="assets/logo.svg" alt=""></div>
+       
     </a>
 
     <ul class="nav-links">
-        <li><a href="index.php"                class="<?php echo $current_page=='index.php'        ?'active':'';?>">HOME</a></li>
-        <li><a href="frontend/all-doctors.php" class="<?php echo $current_page=='all-doctors.php'  ?'active':'';?>">ALL DOCTORS</a></li>
-        <li><a href="frontend/about.php"       class="<?php echo $current_page=='about.php'        ?'active':'';?>">ABOUT</a></li>
-        <li><a href="frontend/contact.php"     class="<?php echo $current_page=='contact.php'      ?'active':'';?>">CONTACT</a></li>
+        <li><a href="index.php"    class="<?php echo $current_page=='index.php'        ?'active':'';?>">HOME</a></li>
+        <li><a href="Alldoctors.php" class="<?php echo $current_page=='all-doctors.php'  ?'active':'';?>">ALL DOCTORS</a></li>
+        <li><a href="about.php"       class="<?php echo $current_page=='about.php'        ?'active':'';?>">ABOUT</a></li>
+        <li><a href="contact.php"     class="<?php echo $current_page=='contact.php'      ?'active':'';?>">CONTACT</a></li>
     </ul>
 
     <div class="nav-cta">
@@ -577,8 +577,8 @@ footer {
             <span style="font-size:0.875rem;color:#3c3c3c;padding:0.25rem 0;">
                 Hi, <?php echo htmlspecialchars($user_name); ?>
             </span>
-            <a href="frontend/my-appointments.php" class="mob-btn mob-btn-fill">My Appointments</a>
-            <a href="frontend/logout.php" style="text-align:center;font-size:0.875rem;color:#ef4444;font-weight:500;padding:0.35rem;">Logout</a>
+            <a href="Myappointments.php" class="mob-btn mob-btn-fill">My Appointments</a>
+            <a href="logout.php" style="text-align:center;font-size:0.875rem;color:#ef4444;font-weight:500;padding:0.35rem;">Logout</a>
         <?php else: ?>
             <a href="login.php"    class="mob-btn mob-btn-outline">Login</a>
             <a href="login.php" class="mob-btn mob-btn-fill">Create account</a>
@@ -596,15 +596,12 @@ footer {
 
         <div class="hero-trust">
             <div class="trust-avatars">
-                <span>BM</span>
-                <span>TK</span>
-                <span>CM</span>
-                <span>LP</span>
+                <img src="assets/group_profiles.png" alt="">
             </div>
             <p>Simply browse through our extensive list of trusted doctors, schedule your appointment hassle-free.</p>
         </div>
 
-        <a href="frontend/all-doctors.php" class="btn-book">
+        <a href="Alldoctors.php" class="btn-book">
             Book appointment <i class="fas fa-arrow-right"></i>
         </a>
     </div>
@@ -673,7 +670,7 @@ footer {
     </div>
 
     <div class="more-wrap fade-up">
-        <a href="frontend/all-doctors.php" class="btn-more">more</a>
+        <a href="Alldoctors.php" class="btn-more">more</a>
     </div>
     <?php else: ?>
     <p style="text-align:center;color:#888;padding:2rem 0;">No doctors available at the moment.</p>
@@ -685,7 +682,7 @@ footer {
 <div class="section-cta fade-up">
     <div class="cta-text">
         <h2>Book Appointment<br>With 100+ Trusted Doctors</h2>
-        <a href="frontend/register.php" class="btn-cta">Create account</a>
+        <a href="login.php" class="btn-cta">Create account</a>
     </div>
     <img class="cta-img" src="assets/appointment_img.png" alt="Doctor" onerror="this.style.display='none'">
 </div>
@@ -696,10 +693,10 @@ footer {
     <div class="footer-grid">
         <div>
             <div class="footer-logo">
-                <div class="f-icon"><i class="fas fa-hospital-user"></i></div>
+                <div class="f-icon"><img src="assets/logo.svg" alt=""></div>
                 K&amp;E Hospital
             </div>
-            <p class="footer-desc">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+            <p class="footer-desc">Your Health, Our Priority Bridging the Gap Between Zambian Patients and Doctors with Quality Healthcare at Your Fingertips, Anywhere in Zambia.</p>
         </div>
 
         <div class="footer-col">
