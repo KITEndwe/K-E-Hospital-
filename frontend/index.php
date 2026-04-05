@@ -77,157 +77,6 @@ body {
 a { text-decoration:none; color:inherit; }
 img { display:block; max-width:100%; }
 
-/* ═══════════════════ NAVBAR ═══════════════════ */
-.navbar {
-    position:sticky; top:0; z-index:999;
-    background:#fff;
-    border-bottom:1px solid #ebebeb;
-    height:70px;
-    display:flex; align-items:center;
-    padding:0 6%;
-    justify-content:space-between;
-    gap:1rem;
-}
-
-.nav-logo {
-    display:flex; align-items:center; gap:8px;
-    font-size:1.25rem; font-weight:700; color:#1a1a2e;
-    flex-shrink:0;
-}
-.nav-logo-icon {
-    width:34px; height:34px; background:#5f6fff;
-    border-radius:8px; display:flex; align-items:center;
-    justify-content:center; color:#fff; font-size:1rem;
-}
-
-/* Desktop links */
-.nav-links {
-    display:flex; align-items:center; gap:2rem;
-    list-style:none; flex:1; justify-content:center;
-}
-.nav-links a {
-    font-size:0.88rem; font-weight:500; color:#595959;
-    transition:color 0.2s; position:relative; padding-bottom:4px;
-    white-space:nowrap;
-}
-.nav-links a:hover { color:#1a1a2e; }
-.nav-links a.active { color:#1a1a2e; font-weight:600; }
-.nav-links a.active::after {
-    content:''; position:absolute; bottom:0; left:0; right:0;
-    height:2px; background:#5f6fff; border-radius:2px;
-}
-
-/* Desktop CTA */
-.nav-cta { display:flex; align-items:center; gap:0.75rem; flex-shrink:0; }
-.btn-nav-login {
-    background:#fff; color:#5f6fff;
-    border:1.5px solid #5f6fff;
-    padding:0.5rem 1.25rem; border-radius:50px;
-    font-size:0.85rem; font-weight:600;
-    transition:all 0.2s; white-space:nowrap; cursor:pointer;
-    font-family:'Outfit',sans-serif;
-}
-.btn-nav-login:hover { background:#f0f1ff; }
-.btn-nav-create {
-    background:#5f6fff; color:#fff;
-    border:none; padding:0.55rem 1.4rem; border-radius:50px;
-    font-size:0.85rem; font-weight:600;
-    transition:all 0.25s; white-space:nowrap; cursor:pointer;
-    font-family:'Outfit',sans-serif;
-}
-.btn-nav-create:hover {
-    background:#4a5af0;
-    box-shadow:0 4px 14px rgba(95,111,255,0.35);
-    transform:translateY(-1px);
-}
-.user-pill {
-    display:flex; align-items:center; gap:0.5rem;
-    background:#f5f5ff; padding:0.35rem 0.9rem; border-radius:50px;
-    font-size:0.85rem; font-weight:500; white-space:nowrap;
-}
-.user-avatar {
-    width:26px; height:26px; border-radius:50%;
-    background:#5f6fff; color:#fff;
-    display:flex; align-items:center; justify-content:center;
-    font-size:0.7rem; font-weight:700;
-}
-.btn-logout-sm {
-    font-size:0.78rem; color:#ef4444; font-weight:500;
-    border:1px solid #ef4444; padding:0.3rem 0.75rem;
-    border-radius:50px; transition:all 0.2s; background:#fff;
-}
-.btn-logout-sm:hover { background:#ef4444; color:#fff; }
-
-/* ── Hamburger ── */
-.hamburger {
-    display:none;
-    flex-direction:column; justify-content:center; gap:5px;
-    width:40px; height:40px;
-    background:none; border:none; cursor:pointer; padding:6px;
-    flex-shrink:0;
-}
-.hamburger span {
-    display:block; width:22px; height:2px;
-    background:#1a1a2e; border-radius:2px;
-    transition:all 0.3s ease;
-}
-.hamburger.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
-.hamburger.open span:nth-child(2) { opacity:0; transform:scaleX(0); }
-.hamburger.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
-
-/* ── Mobile Drawer ── */
-.mobile-menu {
-    position:fixed;
-    top:70px; left:0; right:0;
-    background:#fff;
-    border-bottom:1px solid #ebebeb;
-    box-shadow:0 8px 32px rgba(0,0,0,0.12);
-    z-index:998;
-    padding:0 6% 1.5rem;
-    /* Hidden by default */
-    max-height:0;
-    overflow:hidden;
-    transition:max-height 0.35s ease, padding 0.35s ease;
-}
-.mobile-menu.open {
-    max-height:600px;
-    padding:1rem 6% 1.5rem;
-}
-.mobile-menu a.mob-link {
-    display:block; padding:0.85rem 0;
-    font-size:0.95rem; font-weight:500; color:#3c3c3c;
-    border-bottom:1px solid #f2f2f2;
-    transition:color 0.2s;
-}
-.mobile-menu a.mob-link:hover,
-.mobile-menu a.mob-link.active { color:#5f6fff; }
-.mobile-menu .mob-actions {
-    margin-top:1rem; display:flex; flex-direction:column; gap:0.75rem;
-}
-.mob-btn {
-    display:block; text-align:center;
-    padding:0.75rem; border-radius:50px;
-    font-size:0.9rem; font-weight:600;
-    transition:all 0.2s;
-}
-.mob-btn-outline {
-    border:1.5px solid #5f6fff; color:#5f6fff; background:#fff;
-}
-.mob-btn-outline:hover { background:#f0f1ff; }
-.mob-btn-fill {
-    background:#5f6fff; color:#fff; border:none;
-}
-.mob-btn-fill:hover { background:#4a5af0; }
-
-/* Overlay */
-.nav-overlay {
-    display:none; position:fixed;
-    inset:0; top:70px;
-    background:rgba(0,0,0,0.25);
-    z-index:997;
-}
-.nav-overlay.open { display:block; }
-
 /* ═══════════════════ HERO ═══════════════════ */
 .hero {
     background:linear-gradient(120deg,#5f6fff 0%,#7c8cff 55%,#a0abff 100%);
@@ -424,34 +273,56 @@ img { display:block; max-width:100%; }
 }
 .btn-cta:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.18); }
 .cta-img {
-    height:410px; position:relative; z-index:2;
+    height:310px; position:relative; z-index:2;
     object-fit:contain;
     filter:drop-shadow(0 12px 24px rgba(0,0,0,0.2));
 }
 
 /* ═══════════════════ FOOTER ═══════════════════ */
 footer {
-    background:#fff; border-top:1px solid #ebebeb;
+    background:#fff; 
+    border-top:1px solid #ebebeb;
     padding:3.5rem 6% 2rem;
 }
 .footer-grid {
-    display:grid; grid-template-columns:2fr 1fr 1fr;
-    gap:3rem; margin-bottom:2.5rem;
+    display:grid; 
+    grid-template-columns:2fr 1fr 1fr;
+    gap:3rem; 
+    margin-bottom:2.5rem;
 }
 .footer-logo {
-    display:flex; align-items:center; gap:8px;
-    font-size:1.15rem; font-weight:700; color:#1a1a2e;
+    display:flex; 
+    align-items:center; 
+    gap:8px;
+    font-size:1.15rem; 
+    font-weight:700; 
+    color:#1a1a2e;
     margin-bottom:0.875rem;
 }
 .f-icon {
-    width:30px; height:30px; background:#5f6fff;
-    border-radius:7px; display:flex; align-items:center;
-    justify-content:center; color:#fff; font-size:0.85rem;
+    width:30px; 
+    height:30px; 
+    background:#5f6fff;
+    border-radius:7px; 
+    display:flex; 
+    align-items:center;
+    justify-content:center; 
+    color:#fff; 
+    font-size:0.85rem;
 }
-.footer-desc { font-size:0.85rem; color:#777; line-height:1.7; max-width:300px; }
+.footer-desc { 
+    font-size:0.85rem; 
+    color:#777; 
+    line-height:1.7; 
+    max-width:300px;
+ }
 .footer-col h4 {
-    font-size:0.82rem; font-weight:700; color:#1a1a2e;
-    text-transform:uppercase; letter-spacing:0.06em; margin-bottom:1.1rem;
+    font-size:0.82rem; 
+    font-weight:700; 
+    color:#1a1a2e;
+    text-transform:uppercase; 
+    letter-spacing:0.06em; 
+    margin-bottom:1.1rem;
 }
 .footer-col ul { list-style:none; }
 .footer-col ul li { margin-bottom:0.6rem; }
@@ -492,13 +363,6 @@ footer {
 
 /* ── 768px: Show hamburger ── */
 @media (max-width:768px) {
-    .nav-links  { display:none !important; }
-    .nav-cta    { display:none !important; }
-    .hamburger  { display:flex; }
-
-    .navbar { padding:0 5%; height:64px; }
-    .mobile-menu { top:64px; }
-    .nav-overlay { top:64px; }
 
     .hero { padding-left:5%; min-height:340px; }
     .hero-left { padding:2.5rem 0; }
@@ -533,63 +397,13 @@ footer {
 <body>
 
 <!-- ═════════════ NAVBAR ═════════════ -->
-<nav class="navbar">
+<?php
+$current_page = 'index.php';
+$profile_image = isset($_SESSION['profile_image']) ? $_SESSION['profile_image'] : '';
+require_once 'navbar.php';
+?>
 
-    <a href="index.php">
-        <div ><img src="assets/logo.svg" style="width: 100px  ;" alt=""></div>
-       
-    </a>
-
-    <ul class="nav-links">
-        <li><a href="index.php"    class="<?php echo $current_page=='index.php'        ?'active':'';?>">HOME</a></li>
-        <li><a href="Alldoctors.php" class="<?php echo $current_page=='all-doctors.php'  ?'active':'';?>">ALL DOCTORS</a></li>
-        <li><a href="about.php"       class="<?php echo $current_page=='about.php'        ?'active':'';?>">ABOUT</a></li>
-        <li><a href="contact.php"     class="<?php echo $current_page=='contact.php'      ?'active':'';?>">CONTACT</a></li>
-    </ul>
-
-    <div class="nav-cta">
-        <?php if ($is_logged_in): ?>
-            <div class="user-pill">
-                <div class="user-avatar"><?php echo strtoupper(substr($user_name,0,1)); ?></div>
-                <span><?php echo htmlspecialchars($user_name); ?></span>
-            </div>
-            <a href="logout.php" class="btn-logout-sm">Logout</a>
-        <?php else: ?>
-            <a href="frontend/login.php"    class="btn-nav-login">Login</a>
-            <a href="frontend/register.php" class="btn-nav-create">Create account</a>
-        <?php endif; ?>
-    </div>
-
-    <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
-        <span></span><span></span><span></span>
-    </button>
-</nav>
-
-<!-- Mobile drawer -->
-<div class="mobile-menu" id="mobileMenu">
-    <a href="index.php"                class="mob-link <?php echo $current_page=='index.php'      ?'active':'';?>">Home</a>
-    <a href="Alldoctors.php" class="mob-link <?php echo $current_page=='all-doctors.php'?'active':'';?>">All Doctors</a>
-    <a href="about.php"       class="mob-link <?php echo $current_page=='about.php'      ?'active':'';?>">About</a>
-    <a href="contact.php"     class="mob-link <?php echo $current_page=='contact.php'    ?'active':'';?>">Contact</a>
-
-    <div class="mob-actions">
-        <?php if ($is_logged_in): ?>
-            <span style="font-size:0.875rem;color:#3c3c3c;padding:0.25rem 0;">
-                Hi, <?php echo htmlspecialchars($user_name); ?>
-            </span>
-            <a href="Myappointments.php" class="mob-btn mob-btn-fill">My Appointments</a>
-            <a href="logout.php" style="text-align:center;font-size:0.875rem;color:#ef4444;font-weight:500;padding:0.35rem;">Logout</a>
-        <?php else: ?>
-            <a href="login.php"    class="mob-btn mob-btn-outline">Login</a>
-            <a href="login.php" class="mob-btn mob-btn-fill">Create account</a>
-        <?php endif; ?>
-    </div>
-</div>
-
-<div class="nav-overlay" id="navOverlay"></div>
-
-
-<!-- ═════════════ HERO ═════════════ -->
+<!-- ═════════════<!-- ═════════════ HERO ═════════════ -->
 <section class="hero">
     <div class="hero-left">
         <h1>Book Appointment<br>With Trusted Doctors</h1>
@@ -621,7 +435,7 @@ footer {
 
     <div class="speciality-row stagger">
         <?php foreach ($spec_list as $spec): ?>
-        <a href="frontend/all-doctors.php?speciality=<?php echo urlencode($spec['label']); ?>" class="spec-card fade-up">
+        <a href="Alldoctors.php?speciality=<?php echo urlencode($spec['label']); ?>" class="spec-card fade-up">
             <div class="spec-icon">
                 <img
                     src="<?php echo htmlspecialchars($spec['icon']); ?>"
@@ -649,7 +463,7 @@ footer {
         <?php foreach ($doctors as $doc):
             $fallback = "https://placehold.co/300x370/dce3ff/5f6fff?text=" . rawurlencode($doc['name']);
         ?>
-        <a href="frontend/appointment.php?doctor=<?php echo urlencode($doc['doctor_id']); ?>" class="doc-card fade-up">
+        <a href="Myappointment.php?doctor=<?php echo urlencode($doc['doctor_id']); ?>" class="doc-card fade-up">
             <div class="doc-img-wrap">
                 <img
                     src="<?php echo htmlspecialchars($doc['profile_image']); ?>"
@@ -670,7 +484,7 @@ footer {
     </div>
 
     <div class="more-wrap fade-up">
-        <a href="Alldoctors.php" class="btn-more">more</a>
+        <a href="Alldoctors.php" class="btn-more">More....</a>
     </div>
     <?php else: ?>
     <p style="text-align:center;color:#888;padding:2rem 0;">No doctors available at the moment.</p>
@@ -684,7 +498,7 @@ footer {
         <h2>Book Appointment<br>With 100+ Trusted Doctors</h2>
         <a href="login.php" class="btn-cta">Create account</a>
     </div>
-    <img class="cta-img" src="assets/appointment_img.png" alt="Doctor" onerror="this.style.display='none'">
+    <img class="cta-img" src="assets/appointment_img.png"  alt="Doctor" onerror="this.style.display='none'">
 </div>
 
 
@@ -693,10 +507,9 @@ footer {
     <div class="footer-grid">
         <div>
             <div >
-                <div ><img src="assets/logo.svg" style="width: 100px;" alt=""></div>
-                
+                <div ><img src="assets/logo.svg" width="100px" alt=""></div>
             </div>
-            <p class="footer-desc">Your Health, Our Priority Bridging the Gap Between Zambian Patients and Doctors with Quality Healthcare at Your Fingertips, Anywhere in Zambia.</p>
+            <p class="footer-desc">Your Health, Our Priority. Bridging the Gap Between Zambian Patients and Doctors with Quality Healthcare at Your Fingertips, Anywhere in Zambia.</p>
         </div>
 
         <div class="footer-col">
@@ -712,7 +525,7 @@ footer {
         <div class="footer-col">
             <h4>Get In Touch</h4>
             <ul>
-                <li>+260 7610 16446</li>
+                <li>+260-7610-16446</li>
                 <li>admin@kehospital.co.zm</li>
             </ul>
         </div>
