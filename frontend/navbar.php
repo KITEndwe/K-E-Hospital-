@@ -313,7 +313,7 @@ if ($is_logged_in && empty($profile_img) && isset($_SESSION['user_id'])) {
                     <a class="dd-item" href="Myprofile.php">
                         <i class="fas fa-user-circle"></i> My Profile
                     </a>
-                    <a class="dd-item" href="Myappointments.php">
+                    <a class="dd-item" href="Myappointment.php">
                         <i class="fas fa-calendar-check"></i> My Appointments
                     </a>
                     <div class="dd-divider"></div>
@@ -361,7 +361,7 @@ if ($is_logged_in && empty($profile_img) && isset($_SESSION['user_id'])) {
                 </div>
             </div>
             <a href="Myprofile.php"     class="mob-menu-link"><i class="fas fa-user-circle"></i> My Profile</a>
-            <a href="Myappointments.php" class="mob-menu-link"><i class="fas fa-calendar-check"></i> My Appointments</a>
+            <a href="Myappointment.php" class="mob-menu-link"><i class="fas fa-calendar-check"></i> My Appointments</a>
             <a href="logout.php"         class="mob-menu-link mob-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <?php else: ?>
             <a href="login.php"                  class="mob-btn mob-btn-outline">Login</a>
