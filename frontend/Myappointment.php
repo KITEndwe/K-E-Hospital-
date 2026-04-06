@@ -80,7 +80,7 @@ try {
             'amount'          => 250,
             'doctor_name'     => 'Dr. Mwila Banda',
             'speciality'      => 'General Physician',
-            'doctor_image'    => 'assets/doc1.jpg',
+            'doctor_image'    => 'assets/doc1.png',
             'address_line1'   => 'K&E-Hospital',
             'address_line2'   => 'Great East Road, Lusaka',
             'fees'            => 250,
@@ -95,7 +95,7 @@ try {
             'amount'          => 300,
             'doctor_name'     => 'Dr. Mutinta Phiri',
             'speciality'      => 'Gynecologist',
-            'doctor_image'    => 'assets/doc2.jpg',
+            'doctor_image'    => 'assets/doc2.png',
             'address_line1'   => 'Levy Mwanawasa Medical University',
             'address_line2'   => 'Great East Road, Lusaka',
             'fees'            => 300,
@@ -110,13 +110,31 @@ try {
             'amount'          => 280,
             'doctor_name'     => 'Dr. Christopher Tembo',
             'speciality'      => 'Pediatrician',
-            'doctor_image'    => 'assets/doc4.jpg',
+            'doctor_image'    => 'assets/doc4.png',
             'address_line1'   => 'K&E-Hospital, Matero Level One',
             'address_line2'   => 'Matero, Lusaka',
             'fees'            => 280,
             'symptoms'        => '',
         ),
     );
+}
+
+/* Function to get correct doctor image path */
+function getDoctorImagePath($image_path) {
+    if (empty($image_path)) {
+        return '';
+    }
+    
+    // Remove leading slash if exists
+    $clean_path = ltrim($image_path, '/');
+    
+    // If path already starts with assets/, use as is (relative to current directory)
+    if (strpos($clean_path, 'assets/') === 0) {
+        return $clean_path;
+    }
+    
+    // Default: assume image is in assets/ folder
+    return 'assets/' . $clean_path;
 }
 
 /* ── Format helpers ── */
@@ -126,7 +144,7 @@ function fmtDate($d) {
                     7=>'July',8=>'August',9=>'September',10=>'October',11=>'November',12=>'December');
     $parts = explode('-', $d);
     $y = intval($parts[0]); $m = intval($parts[1]); $day = intval($parts[2]);
-    return $day . ', ' . (isset($months[$m]) ? $months[$m] : $m) . ' | ';
+    return $day . ' ' . (isset($months[$m]) ? $months[$m] : $m);
 }
 
 function fmtTime($t) {
@@ -144,7 +162,7 @@ function fmtTime($t) {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
 <title>My Appointments - K&amp;E Hospital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -207,7 +225,7 @@ img { display:block; max-width:100%; }
     border-radius:10px; overflow:hidden;
     background:linear-gradient(160deg,#dce3ff,#eaf0ff);
     flex-shrink:0;
-    display:flex; align-items:flex-end; justify-content:center;
+    display:flex; align-items:center; justify-content:center;
 }
 .apt-photo img {
     width:100%; height:100%;
@@ -404,6 +422,7 @@ footer {
 
 @media (max-width:480px) {
     .page-wrap { padding:1.75rem 5% 3rem; }
+    .apt-photo { height:150px; }
 }
 </style>
 </head>
@@ -447,18 +466,8 @@ footer {
             $is_paid      = ($apt['payment_status'] === 'Paid');
             $is_completed = ($apt['status'] === 'Completed');
 
-            /* Doctor image path – DB stores relative to project root */
-            $doc_img_db  = isset($apt['doctor_image']) ? $apt['doctor_image'] : '';
-            /* From frontend/ we go ../ to reach project root */
-            $doc_img_web = '';
-            if ($doc_img_db) {
-                /* if already starts with assets/ it's likely relative to frontend */
-                if (strpos($doc_img_db, 'assets/') === 0) {
-                    $doc_img_web = $doc_img_db;
-                } else {
-                    $doc_img_web = '../' . $doc_img_db;
-                }
-            }
+            /* Get correct doctor image path */
+            $doc_img_web = getDoctorImagePath($apt['doctor_image']);
             $fallback_img = 'https://placehold.co/120x130/dce3ff/5f6fff?text=Dr';
 
             /* Address */
@@ -491,7 +500,7 @@ footer {
 
                 <div class="apt-datetime">
                     <strong>Date &amp; Time:</strong>
-                    <?php echo htmlspecialchars(fmtDate($apt['appointment_date']) . fmtTime($apt['appointment_time'])); ?>
+                    <?php echo htmlspecialchars(fmtDate($apt['appointment_date']) . ' | ' . fmtTime($apt['appointment_time'])); ?>
                 </div>
             </div>
 
@@ -551,8 +560,7 @@ footer {
     <div class="footer-grid">
         <div>
             <div class="footer-logo">
-                <div class="f-icon"><i class="fas fa-hospital-user"></i></div>
-                K&amp;E Hospital
+                <img src="assets/logo.svg" width="100px" alt="K&amp;E Hospital">
             </div>
             <p class="footer-desc">Your Health, Our Priority. Bridging the Gap Between Zambian Patients and Doctors with Quality Healthcare at Your Fingertips.</p>
         </div>
