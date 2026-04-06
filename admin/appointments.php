@@ -104,7 +104,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <title>All Appointments - K&E Hospital Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -131,8 +131,9 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             position: fixed;
             height: 100vh;
             overflow-y: auto;
-            transition: all 0.3s;
-            z-index: 100;
+            transition: transform 0.3s ease-in-out;
+            z-index: 1000;
+            transform: translateX(0);
         }
 
         .sidebar::-webkit-scrollbar { width: 6px; }
@@ -186,6 +187,8 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             flex: 1;
             margin-left: 280px;
             padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+            width: 100%;
         }
 
         .top-bar {
@@ -198,12 +201,20 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             align-items: center;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             border: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title { 
+            display: flex; 
+            align-items: center; 
+            gap: 1rem; 
         }
 
         .page-title h1 { font-size: 1.5rem; font-weight: 700; color: #0f172a; }
         .page-title p { font-size: 0.875rem; color: #64748b; margin-top: 0.25rem; }
 
-        .user-info { display: flex; align-items: center; gap: 1.5rem; }
+        .user-info { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
 
         .admin-badge {
             display: flex;
@@ -280,7 +291,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             border: 1px solid #e2e8f0;
         }
 
-        .filter-group { display: flex; align-items: center; gap: 0.5rem; }
+        .filter-group { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
         .filter-group label { font-size: 0.875rem; font-weight: 500; color: #475569; }
 
         .filter-group select,
@@ -293,7 +304,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             background: white;
         }
 
-        .search-box { flex: 1; display: flex; gap: 0.5rem; }
+        .search-box { flex: 1; display: flex; gap: 0.5rem; min-width: 200px; }
         .search-box input { flex: 1; padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; font-size: 0.875rem; }
         .search-box button { padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 0.5rem; cursor: pointer; }
 
@@ -304,6 +315,9 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             text-decoration: none;
             border-radius: 0.5rem;
             font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .table-container {
@@ -381,10 +395,10 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         .empty-state { text-align: center; padding: 3rem; color: #64748b; }
         .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
 
-        /* Mobile */
+        /* Mobile Components */
         .mobile-menu-toggle {
             display: none;
-            background: none;
+            background: #f1f5f9;
             border: none;
             cursor: pointer;
             width: 40px;
@@ -392,6 +406,13 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             border-radius: 0.5rem;
             font-size: 1.25rem;
             color: #1f2937;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .mobile-menu-toggle:hover {
+            background: #e2e8f0;
         }
 
         .sidebar-overlay {
@@ -405,18 +426,249 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
 
         .sidebar-overlay.active { display: block; }
 
-        @media (max-width: 1024px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+        /* ========== RESPONSIVE STYLES ========== */
+        
+        /* Tablet Landscape (1024px - 1200px) */
+        @media (max-width: 1024px) {
+            .stats-row { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 0.75rem;
+            }
+        }
 
+        /* Tablet Portrait (768px - 1024px) */
+        @media (max-width: 900px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stat-number {
+                font-size: 1.5rem;
+            }
+            .filters-bar {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .filter-group {
+                flex: 1;
+                min-width: 150px;
+            }
+            .search-box {
+                min-width: 200px;
+                flex: 2;
+            }
+        }
+
+        /* Mobile (up to 768px) */
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); position: fixed; z-index: 1000; }
-            .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; padding: 1rem; }
-            .mobile-menu-toggle { display: flex; align-items: center; justify-content: center; }
-            .top-bar { flex-direction: column; gap: 1rem; text-align: center; }
-            .user-info { width: 100%; justify-content: center; }
-            .filters-bar { flex-direction: column; align-items: stretch; }
-            .filter-group { justify-content: space-between; }
-            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 1001;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content { 
+                margin-left: 0; 
+                padding: 1rem; 
+            }
+            
+            .mobile-menu-toggle { 
+                display: flex; 
+            }
+            
+            .top-bar { 
+                flex-direction: column; 
+                align-items: stretch;
+                padding: 1rem;
+            }
+            
+            .page-title {
+                justify-content: space-between;
+                width: 100%;
+            }
+            
+            .user-info { 
+                width: 100%; 
+                justify-content: space-between;
+            }
+            
+            .admin-badge {
+                flex: 1;
+                justify-content: center;
+            }
+            
+            .stats-row { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 0.75rem;
+                margin-bottom: 1rem;
+            }
+            
+            .stat-card-sm {
+                padding: 0.875rem;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
+            
+            .filters-bar { 
+                flex-direction: column; 
+                align-items: stretch;
+                padding: 1rem;
+            }
+            
+            .filter-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .filter-group select,
+            .filter-group input {
+                flex: 1;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            /* Make table scrollable horizontally on mobile */
+            .appointments-table {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+            
+            th, td {
+                padding: 0.75rem;
+                font-size: 0.8rem;
+            }
+            
+            .avatar {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .details h4 {
+                font-size: 0.8rem;
+            }
+            
+            .details p {
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Small Mobile (480px and below) */
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.75rem;
+            }
+            
+            .top-bar {
+                padding: 0.875rem;
+                margin-bottom: 1rem;
+            }
+            
+            .page-title h1 {
+                font-size: 1.25rem;
+            }
+            
+            .page-title p {
+                font-size: 0.75rem;
+            }
+            
+            .stats-row {
+                gap: 0.5rem;
+            }
+            
+            .stat-card-sm {
+                padding: 0.75rem;
+            }
+            
+            .stat-number {
+                font-size: 1.25rem;
+            }
+            
+            .stat-label {
+                font-size: 0.7rem;
+            }
+            
+            .filters-bar {
+                padding: 0.875rem;
+            }
+            
+            .filter-group label {
+                font-size: 0.8rem;
+            }
+            
+            .filter-group select,
+            .filter-group input,
+            .search-box input,
+            .search-box button,
+            .reset-btn {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.75rem;
+            }
+            
+            .admin-badge {
+                padding: 0.4rem 0.75rem;
+            }
+            
+            .admin-avatar {
+                width: 30px;
+                height: 30px;
+            }
+            
+            .admin-name {
+                font-size: 0.8rem;
+            }
+            
+            .logout-btn {
+                padding: 0.4rem 1rem;
+                font-size: 0.8rem;
+            }
+            
+            .empty-state {
+                padding: 2rem;
+            }
+            
+            .empty-state i {
+                font-size: 2rem;
+            }
+            
+            .empty-state p {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Extra Small Mobile (375px and below) */
+        @media (max-width: 375px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            
+            .admin-badge {
+                justify-content: center;
+            }
+            
+            .logout-btn {
+                text-align: center;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -462,8 +714,10 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                 <button class="mobile-menu-toggle" id="mobileMenuToggle">
                     <i class="fas fa-bars"></i>
                 </button>
-                <h1>All Appointments</h1>
-                <p>Manage and track all patient appointments</p>
+                <div>
+                    <h1>All Appointments</h1>
+                    <p>Manage and track all patient appointments</p>
+                </div>
             </div>
             <div class="user-info">
                 <div class="admin-badge">
@@ -498,7 +752,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         </div>
 
         <div class="filters-bar">
-            <form method="GET" style="display: contents;">
+            <form method="GET" style="display: contents; width: 100%;">
                 <div class="filter-group">
                     <label>Status:</label>
                     <select name="status" onchange="this.form.submit()">
@@ -526,9 +780,9 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         <div class="table-container">
             <?php if (count($appointments) > 0): ?>
                 <div class="appointments-table">
-                     <table>
+                    <table>
                         <thead>
-                             <tr>
+                            <tr>
                                 <th>#</th>
                                 <th>Patient</th>
                                 <th>Doctor</th>
@@ -537,12 +791,12 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                                 <th>Fees</th>
                                 <th>Status</th>
                                 <th>Actions</th>
-                             </tr>
+                            </tr>
                         </thead>
                         <tbody>
                             <?php $counter = 1; ?>
                             <?php foreach ($appointments as $appointment): ?>
-                                 <tr>
+                                <tr>
                                     <td><?php echo $counter++; ?></td>
                                     <td>
                                         <div class="patient-info">
@@ -611,10 +865,10 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                                             </button>
                                         </div>
                                     </td>
-                                 </tr>
+                                </tr>
                             <?php endforeach; ?>
                         </tbody>
-                     </table>
+                    </table>
                 </div>
             <?php else: ?>
                 <div class="empty-state">
@@ -631,13 +885,22 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
 
-    function closeMenu() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
-    function openMenu()  { sidebar.classList.add('open');    overlay.classList.add('active');    }
+    function closeMenu() { 
+        if (sidebar) sidebar.classList.remove('open'); 
+        if (overlay) overlay.classList.remove('active'); 
+        document.body.style.overflow = '';
+    }
+    
+    function openMenu() { 
+        if (sidebar) sidebar.classList.add('open');    
+        if (overlay) overlay.classList.add('active');    
+        document.body.style.overflow = 'hidden';
+    }
 
     if (mobileToggle) {
         mobileToggle.addEventListener('click', function(e) { 
             e.stopPropagation(); 
-            if (sidebar.classList.contains('open')) {
+            if (sidebar && sidebar.classList.contains('open')) {
                 closeMenu();
             } else {
                 openMenu();
@@ -650,7 +913,13 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
     }
     
     window.addEventListener('resize', function() { 
-        if (window.innerWidth > 768 && sidebar.classList.contains('open')) {
+        if (window.innerWidth > 768 && sidebar && sidebar.classList.contains('open')) {
+            closeMenu();
+        }
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
             closeMenu();
         }
     });

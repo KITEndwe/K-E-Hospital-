@@ -106,7 +106,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <title>Admin Dashboard - K&E Hospital</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -121,6 +121,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             font-family: 'Outfit', sans-serif;
             background: #f5f7fb;
             color: #1f2937;
+            overflow-x: hidden;
         }
 
         .dashboard-container {
@@ -136,9 +137,14 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             position: fixed;
             height: 100vh;
             overflow-y: auto;
-            transition: all 0.3s;
-            z-index: 100;
+            transition: transform 0.3s ease-in-out;
+            z-index: 1000;
+            transform: translateX(0);
         }
+
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .sidebar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 3px; }
 
         .sidebar-header {
             padding: 1.5rem;
@@ -167,6 +173,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             color: #6b7280;
             text-decoration: none;
             transition: all 0.3s;
+            border-right: 3px solid transparent;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -179,11 +186,49 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             width: 24px;
         }
 
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: #f1f5f9;
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+            color: #1f2937;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .mobile-menu-toggle:hover {
+            background: #e2e8f0;
+        }
+
         /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 280px;
             padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+            width: 100%;
         }
 
         /* Top Bar */
@@ -195,12 +240,61 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
         .page-title h1 {
             font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .page-title p {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #f1f5f9;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+        }
+
+        .admin-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
             font-weight: 600;
+        }
+
+        .admin-name {
+            font-weight: 500;
+            color: #1e293b;
         }
 
         .logout-btn {
@@ -213,11 +307,14 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             align-items: center;
             gap: 0.5rem;
             transition: all 0.3s;
+            font-size: 0.875rem;
+            font-weight: 500;
         }
 
         .logout-btn:hover {
             background: #dc2626;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220,38,38,0.3);
         }
 
         /* Stats Grid */
@@ -232,7 +329,8 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             background: white;
             border-radius: 1rem;
             padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
             transition: all 0.3s;
         }
 
@@ -259,13 +357,19 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             margin-bottom: 0.25rem;
         }
 
-        /* Tables */
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        /* Appointments Section */
         .appointments-section {
             background: white;
             border-radius: 1rem;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
         }
 
         .section-header {
@@ -273,10 +377,36 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .section-header h2 i {
+            color: #3b82f6;
+            margin-right: 0.5rem;
+        }
+
+        .view-all {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .view-all:hover {
+            text-decoration: underline;
         }
 
         .appointments-table {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         table {
@@ -294,6 +424,11 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             background: #f9fafb;
             font-weight: 600;
             color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        td {
+            font-size: 0.875rem;
         }
 
         .status-badge {
@@ -309,19 +444,237 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         .status-completed { background: #e0e7ff; color: #4338ca; }
         .status-cancelled { background: #fee2e2; color: #dc2626; }
 
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* ========== RESPONSIVE STYLES ========== */
+        
+        /* Tablet Landscape (1024px - 1200px) */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+        }
+
+        /* Tablet Portrait (768px - 1024px) */
+        @media (max-width: 900px) {
+            .stats-grid {
+                gap: 0.75rem;
+            }
+            .stat-card {
+                padding: 1.25rem;
+            }
+            .stat-value {
+                font-size: 1.75rem;
+            }
+        }
+
+        /* Mobile (up to 768px) */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
+                position: fixed;
+                z-index: 1001;
+                width: 280px;
             }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
             .main-content {
                 margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 1rem;
+            }
+            
+            .page-title {
+                justify-content: space-between;
+                width: 100%;
+            }
+            
+            .page-title h1 {
+                font-size: 1.25rem;
+            }
+            
+            .page-title p {
+                font-size: 0.75rem;
+            }
+            
+            .user-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .admin-badge {
+                flex: 1;
+                justify-content: center;
+            }
+            
+            .admin-name {
+                font-size: 0.875rem;
+            }
+            
+            .logout-btn {
+                padding: 0.4rem 1rem;
+                font-size: 0.8rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+                margin-bottom: 1rem;
+            }
+            
+            .stat-card {
+                padding: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .stat-header i {
+                font-size: 1.5rem;
+            }
+            
+            .appointments-section {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .section-header h2 {
+                font-size: 1.1rem;
+            }
+            
+            .appointments-table {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 500px;
+            }
+            
+            th, td {
+                padding: 0.75rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Small Mobile (480px and below) */
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.75rem;
+            }
+            
+            .top-bar {
+                padding: 0.875rem;
+                margin-bottom: 1rem;
+            }
+            
+            .page-title h1 {
+                font-size: 1.1rem;
+            }
+            
+            .admin-badge {
+                padding: 0.4rem 0.75rem;
+            }
+            
+            .admin-avatar {
+                width: 30px;
+                height: 30px;
+            }
+            
+            .admin-name {
+                font-size: 0.8rem;
+            }
+            
+            .logout-btn {
+                padding: 0.35rem 0.875rem;
+                font-size: 0.75rem;
+            }
+            
+            .stat-card {
+                padding: 0.875rem;
+            }
+            
+            .stat-value {
+                font-size: 1.25rem;
+            }
+            
+            .stat-label {
+                font-size: 0.75rem;
+            }
+            
+            .appointments-section {
+                padding: 0.875rem;
+            }
+            
+            .section-header h2 {
+                font-size: 1rem;
+            }
+            
+            .section-header h2 i {
+                font-size: 0.9rem;
+            }
+            
+            .view-all {
+                font-size: 0.75rem;
+            }
+            
+            .empty-state {
+                padding: 2rem;
+            }
+            
+            .empty-state i {
+                font-size: 2rem;
+            }
+            
+            .empty-state p {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Extra Small Mobile (375px and below) */
+        @media (max-width: 375px) {
+            .user-info {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            
+            .admin-badge {
+                justify-content: center;
+            }
+            
+            .logout-btn {
+                text-align: center;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="dashboard.php" class="sidebar-logo">
                     <i class="fas fa-hospital-user"></i>
@@ -352,15 +705,30 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             </nav>
         </aside>
 
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
         <main class="main-content">
             <div class="top-bar">
                 <div class="page-title">
-                    <h1>Dashboard</h1>
-                    <p>Welcome back, <?= htmlspecialchars($admin_name) ?>!</p>
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1>Dashboard</h1>
+                        <p>Welcome back, <?= htmlspecialchars($admin_name) ?>!</p>
+                    </div>
                 </div>
-                <a href="logout.php" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
+                <div class="user-info">
+                    <div class="admin-badge">
+                        <div class="admin-avatar">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <span class="admin-name"><?= htmlspecialchars($admin_name) ?></span>
+                    </div>
+                    <a href="logout.php" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
             </div>
 
             <div class="stats-grid">
@@ -369,7 +737,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                         <span class="stat-value"><?= $total_appointments ?></span>
                         <i class="fas fa-calendar-check" style="color: #3b82f6;"></i>
                     </div>
-                    <div>Total Appointments</div>
+                    <div class="stat-label">Total Appointments</div>
                 </div>
                 
                 <div class="stat-card">
@@ -377,7 +745,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                         <span class="stat-value"><?= $total_doctors ?></span>
                         <i class="fas fa-user-md" style="color: #10b981;"></i>
                     </div>
-                    <div>Total Doctors</div>
+                    <div class="stat-label">Total Doctors</div>
                 </div>
                 
                 <div class="stat-card">
@@ -385,7 +753,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                         <span class="stat-value"><?= $total_patients ?></span>
                         <i class="fas fa-users" style="color: #8b5cf6;"></i>
                     </div>
-                    <div>Total Patients</div>
+                    <div class="stat-label">Total Patients</div>
                 </div>
                 
                 <div class="stat-card">
@@ -393,14 +761,14 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                         <span class="stat-value">$<?= number_format($monthly_revenue, 2) ?></span>
                         <i class="fas fa-dollar-sign" style="color: #f59e0b;"></i>
                     </div>
-                    <div>Monthly Revenue</div>
+                    <div class="stat-label">Monthly Revenue</div>
                 </div>
             </div>
 
             <div class="appointments-section">
                 <div class="section-header">
                     <h2><i class="fas fa-clock"></i> Latest Appointments</h2>
-                    <a href="appointments.php" class="view-all" style="color: #3b82f6;">View All →</a>
+                    <a href="appointments.php" class="view-all">View All →</a>
                 </div>
                 
                 <?php if (count($latest_appointments) > 0): ?>
@@ -434,10 +802,58 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                         </table>
                     </div>
                 <?php else: ?>
-                    <p>No appointments found.</p>
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-alt"></i>
+                        <p>No appointments found.</p>
+                    </div>
                 <?php endif; ?>
             </div>
         </main>
     </div>
+
+    <script>
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        function closeMenu() { 
+            if (sidebar) sidebar.classList.remove('open'); 
+            if (overlay) overlay.classList.remove('active'); 
+            document.body.style.overflow = '';
+        }
+        
+        function openMenu() { 
+            if (sidebar) sidebar.classList.add('open');    
+            if (overlay) overlay.classList.add('active');    
+            document.body.style.overflow = 'hidden';
+        }
+
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', function(e) { 
+                e.stopPropagation(); 
+                if (sidebar && sidebar.classList.contains('open')) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            });
+        }
+        
+        if (overlay) {
+            overlay.addEventListener('click', closeMenu);
+        }
+        
+        window.addEventListener('resize', function() { 
+            if (window.innerWidth > 768 && sidebar && sidebar.classList.contains('open')) {
+                closeMenu();
+            }
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
+                closeMenu();
+            }
+        });
+    </script>
 </body>
 </html>
