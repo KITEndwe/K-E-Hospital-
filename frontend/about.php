@@ -15,7 +15,7 @@ $profile_image = isset($_SESSION['profile_image']) ? $_SESSION['profile_image'] 
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>About Us - K&amp;E Hospital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -73,6 +73,54 @@ img { display:block; max-width:100%; }
 .value-icon i { font-size:1.6rem; color:#5f6fff; }
 .value-card h4 { font-size:1rem; font-weight:600; color:#1a1a2e; margin-bottom:0.5rem; }
 .value-card p { font-size:0.8rem; color:#696969; }
+
+/* ── PARTNERSHIPS SECTION (NEW) ── */
+.partnerships-section { margin-bottom:5rem; }
+.partnerships-intro { text-align:center; margin-bottom:2rem; }
+.partnerships-intro p { color:#64748b; font-size:0.9rem; max-width:600px; margin:0 auto; }
+.partners-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; margin-bottom:3rem; }
+.partner-card {
+    background:#fff; border:1px solid #e5e7f0; border-radius:16px;
+    padding:1.5rem; text-align:center; transition:all 0.3s;
+    cursor:pointer; position:relative; overflow:hidden;
+}
+.partner-card:hover { transform:translateY(-5px); box-shadow:0 12px 32px rgba(95,111,255,0.12); border-color:#c5caff; }
+.partner-logo { 
+    width:100px; height:100px; margin:0 auto 1rem;
+    display:flex; align-items:center; justify-content:center;
+    background:#f8fafc; border-radius:50%; padding:1rem;
+    transition:all 0.3s;
+}
+.partner-card:hover .partner-logo { transform:scale(1.05); background:#eef0ff; }
+.partner-logo img { width:100%; height:100%; object-fit:contain; }
+.partner-logo i { font-size:3rem; color:#5f6fff; }
+.partner-card h4 { font-size:1rem; font-weight:700; color:#1a1a2e; margin-bottom:0.25rem; }
+.partner-type { font-size:0.7rem; color:#5f6fff; font-weight:500; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:1px; }
+.partner-card p { font-size:0.8rem; color:#64748b; line-height:1.5; }
+
+/* Local vs International Badge */
+.partner-badge {
+    position:absolute; top:12px; right:12px;
+    font-size:0.65rem; padding:0.2rem 0.6rem;
+    border-radius:20px; font-weight:500;
+}
+.badge-local { background:#d1fae5; color:#065f46; }
+.badge-international { background:#e0e7ff; color:#4338ca; }
+
+/* Partnership CTA */
+.partnership-cta {
+    background:linear-gradient(120deg,#5f6fff 0%,#7c8cff 100%);
+    border-radius:16px; padding:2rem; text-align:center;
+    margin-top:2rem;
+}
+.partnership-cta h3 { color:#fff; font-size:1.3rem; margin-bottom:0.5rem; }
+.partnership-cta p { color:rgba(255,255,255,0.9); font-size:0.85rem; margin-bottom:1.5rem; }
+.partnership-btn {
+    display:inline-block; background:#fff; color:#5f6fff;
+    padding:0.7rem 1.8rem; border-radius:50px; font-weight:600;
+    transition:all 0.3s; font-size:0.85rem;
+}
+.partnership-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.15); }
 
 .team-section { margin-bottom:5rem; }
 .team-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; }
@@ -132,23 +180,31 @@ footer { background:#fff; border-top:1px solid #ebebeb; padding:3.5rem 6% 2rem; 
 .stagger .fade-up:nth-child(8) { transition-delay:0.40s; }
 
 /* ── RESPONSIVE ── */
-@media (max-width:1024px) { .values-grid { grid-template-columns:repeat(2,1fr); } .team-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:1024px) { 
+    .values-grid { grid-template-columns:repeat(2,1fr); } 
+    .team-grid { grid-template-columns:repeat(2,1fr); }
+    .partners-grid { grid-template-columns:repeat(2,1fr); gap:1.5rem; }
+}
 @media (max-width:768px) {
     .about-grid { grid-template-columns:1fr; gap:2rem; }
     .mission-vision { grid-template-columns:1fr; }
     .values-grid { grid-template-columns:repeat(2,1fr); }
     .team-grid { grid-template-columns:repeat(2,1fr); }
+    .partners-grid { grid-template-columns:1fr; gap:1rem; }
     .about-stats { justify-content:center; }
     .footer-grid { grid-template-columns:1fr 1fr; gap:2rem; }
     .page-wrap { padding:2rem 5% 3rem; }
     .cta-section { padding:2rem; }
+    .partnership-cta { padding:1.5rem; }
 }
 @media (max-width:480px) {
     .about-stats { flex-direction:column; gap:1rem; align-items:center; }
     .values-grid { grid-template-columns:1fr; }
     .team-grid { grid-template-columns:1fr; }
+    .partners-grid { grid-template-columns:1fr; }
     .footer-grid { grid-template-columns:1fr; }
     .mv-card { padding:1.5rem; }
+    .partner-card { padding:1.25rem; }
 }
 </style>
 </head>
@@ -209,6 +265,92 @@ footer { background:#fff; border-top:1px solid #ebebeb; padding:3.5rem 6% 2rem; 
         </div>
     </div>
 
+    <!-- ── NEW: PARTNERSHIPS SECTION ── -->
+    <div class="partnerships-section">
+        <div class="section-header fade-up">
+            <h2>Our Trusted Partners</h2>
+            <p>Collaborating with leading healthcare institutions worldwide</p>
+        </div>
+        <div class="partnerships-intro fade-up">
+            <p>We are proud to partner with these reputable organizations to deliver exceptional healthcare services to our patients.</p>
+        </div>
+        
+        <div class="partners-grid stagger">
+            <!-- Partner 1: UAP (Local - Zambia) -->
+            <div class="partner-card fade-up">
+                <span class="partner-badge badge-local"><i class="fas fa-map-marker-alt"></i> Zambia</span>
+                <div class="partner-logo">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h4>UAP Insurance Zambia</h4>
+                <div class="partner-type">Better. Simple. Life.</div>
+                <p>Strategic health insurance partner providing seamless medical coverage for our patients.</p>
+            </div>
+
+            <!-- Partner 2: TAKAFUL Insurance (Local - Zambia) -->
+            <div class="partner-card fade-up">
+                <span class="partner-badge badge-local"><i class="fas fa-map-marker-alt"></i> Zambia</span>
+                <div class="partner-logo">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h4>TAKAFUL Insurance of Africa</h4>
+                <div class="partner-type">A bond beyond insurance</div>
+                <p>Islamic insurance partner offering comprehensive healthcare coverage solutions.</p>
+            </div>
+
+            <!-- Partner 3: Sanlam (International - South Africa) -->
+            <div class="partner-card fade-up">
+                <span class="partner-badge badge-international"><i class="fas fa-globe"></i> International</span>
+                <div class="partner-logo">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h4>Sanlam Insurance Company</h4>
+                <div class="partner-type">South Africa</div>
+                <p>Pan-African financial services group providing medical aid solutions across the continent.</p>
+            </div>
+
+            <!-- Partner 4: World Health Organization (International) -->
+            <div class="partner-card fade-up">
+                <span class="partner-badge badge-international"><i class="fas fa-globe"></i> International</span>
+                <div class="partner-logo">
+                    <i class="fas fa-globe-africa"></i>
+                </div>
+                <h4>World Health Organization</h4>
+                <div class="partner-type">Global Health Partner</div>
+                <p>Collaborating on public health initiatives and healthcare standards improvement.</p>
+            </div>
+
+            <!-- Partner 5: Levy Mwanawasa Hospital (Local - Zambia) -->
+            <div class="partner-card fade-up">
+                <span class="partner-badge badge-local"><i class="fas fa-map-marker-alt"></i> Zambia</span>
+                <div class="partner-logo">
+                    <i class="fas fa-hospital"></i>
+                </div>
+                <h4>Levy Mwanawasa Hospital</h4>
+                <div class="partner-type">Referral Partner</div>
+                <p>Strategic referral partnership for specialized medical procedures and consultations.</p>
+            </div>
+
+            <!-- Partner 6: University Teaching Hospital - UTH (Local - Zambia) -->
+            <div class="partner-card fade-up">
+                <span class="partner-badge badge-local"><i class="fas fa-map-marker-alt"></i> Zambia</span>
+                <div class="partner-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h4>University Teaching Hospital</h4>
+                <div class="partner-type">Academic & Research Partner</div>
+                <p>Medical research collaboration and specialist training partnerships.</p>
+            </div>
+        </div>
+
+        <!-- Partnership CTA -->
+        <div class="partnership-cta fade-up">
+            <h3><i class="fas fa-handshake"></i> Interested in Partnering With Us?</h3>
+            <p>Join our network of trusted healthcare partners and make a difference in Zambian healthcare.</p>
+            <a href="contact.php" class="partnership-btn">Become a Partner →</a>
+        </div>
+    </div>
+
     <div class="team-section">
         <div class="section-header fade-up">
             <h2>Our Leadership</h2>
@@ -254,8 +396,7 @@ footer { background:#fff; border-top:1px solid #ebebeb; padding:3.5rem 6% 2rem; 
     <div class="footer-grid">
         <div>
             <div class="footer-logo">
-                <div ><img src="assets/logo.svg" width="100px" alt=""></div>
-                
+                <div><img src="assets/logo.svg" width="100px" alt="K&amp;E Hospital"></div>
             </div>
             <p class="footer-desc">Your Health, Our Priority. Bridging the Gap Between Zambian Patients and Doctors with Quality Healthcare at Your Fingertips, Anywhere in Zambia.</p>
         </div>
@@ -281,7 +422,6 @@ footer { background:#fff; border-top:1px solid #ebebeb; padding:3.5rem 6% 2rem; 
     </div>
 </footer>
 
-<!-- Scroll fade only — navbar JS is handled by navbar.php -->
 <script>
 (function() {
     var fadeEls = document.querySelectorAll('.fade-up');
