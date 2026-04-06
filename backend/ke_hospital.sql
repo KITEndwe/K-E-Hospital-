@@ -425,3 +425,22 @@ CREATE INDEX idx_doctors_rating ON doctors(rating DESC);
 CREATE INDEX idx_users_email_active ON users(email, is_active);
 CREATE INDEX idx_medical_records_user_date ON medical_records(user_id, record_date DESC);
 CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);
+
+
+
+
+
+
+
+--Doctor credentials (all 10):
+--Email                   Password
+--doc1@kehospital.co.zm  MwilaDoc@2024
+--doc2@kehospital.co.zm  MutintaDoc@2024
+--doc3@kehospital.co.zm  LuyandoDoc@2024
+--doc4@kehospital.co.zm  ChrisDoc@2024
+--doc5@kehospital.co.zm  ChipoDoc@2024
+--doc6@kehospital.co.zm  KelvinDoc@2024
+--doc7@kehospital.co.zm  PatrickDoc@2024
+--doc8@kehospital.co.zm  LillianDoc@2024
+--doc9@kehospital.co.zm  ThandDoc@2024
+--doc10@kehospital.co.zm JosephDoc@2024 

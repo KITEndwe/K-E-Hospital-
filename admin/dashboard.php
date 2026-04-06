@@ -677,8 +677,8 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="dashboard.php" class="sidebar-logo">
-                    <i class="fas fa-hospital-user"></i>
-                    <span>K&E Hospital</span>
+                    <img src="assets/admin_logo.svg" width="150px" alt="">
+                    
                 </a>
             </div>
             <nav class="sidebar-nav">

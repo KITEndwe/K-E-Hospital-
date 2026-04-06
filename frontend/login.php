@@ -1,5 +1,5 @@
 <?php
-// K&E Hospital - Unified Authentication System
+// K&E Hospital - Unified Authentication System (Patient, Admin & Doctor)
 session_start();
 
 $host = 'localhost';
@@ -18,7 +18,7 @@ $errors = array();
 $success = '';
 $active_form = (isset($_GET['action']) && $_GET['action'] === 'register') ? 'register' : 'login';
 
-// Handle Registration
+// Handle Registration (Patients only)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     $full_name    = trim(isset($_POST['full_name'])    ? $_POST['full_name']    : '');
     $email        = trim(isset($_POST['email'])        ? $_POST['email']        : '');
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     }
 }
 
-// Handle Login
+// Handle Login (Patient, Admin, or Doctor)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $email = trim(isset($_POST['email'])    ? $_POST['email']    : '');
     $pass  = trim(isset($_POST['password']) ? $_POST['password'] : '');
@@ -61,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     if (!$pass) $errors[] = 'Password is required.';
 
     if (empty($errors)) {
+        // Admin Login
         if ($role === 'admin') {
             $stmt = $pdo->prepare("SELECT * FROM admin WHERE email = ? AND is_active = TRUE");
             $stmt->execute(array($email));
@@ -77,7 +78,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             } else {
                 $errors[] = 'Invalid admin credentials.';
             }
-        } else {
+        }
+        // Doctor Login
+        elseif ($role === 'doctor') {
+            $stmt = $pdo->prepare("SELECT * FROM doctors WHERE email = ? AND is_available = 1");
+            $stmt->execute(array($email));
+            $doctor = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($doctor && !empty($doctor['password']) && password_verify($pass, $doctor['password'])) {
+                $_SESSION['doctor_id']    = $doctor['doctor_id'];
+                $_SESSION['doctor_name']  = $doctor['name'];
+                $_SESSION['doctor_email'] = $doctor['email'];
+                $_SESSION['doctor_spec']  = $doctor['speciality'];
+                $_SESSION['role']         = 'doctor';
+                $_SESSION['is_doctor']    = true;
+                header('Location: doctor-dashboard.php'); exit;
+            } else {
+                $errors[] = 'Invalid doctor credentials.';
+            }
+        }
+        // Patient Login
+        else {
             $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND is_active = TRUE");
             $stmt->execute(array($email));
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -95,14 +116,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 }
 
-$is_logged_in = isset($_SESSION['user_id']);
-$user_name    = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : '';
+$is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['doctor_id']);
+$user_name    = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : (isset($_SESSION['doctor_name']) ? $_SESSION['doctor_name'] : '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
 <title>Login / Register - K&amp;E Hospital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -176,7 +197,7 @@ img { display:block; max-width:100%; }
 .alert-success{ background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
 .alert ul { padding-left:1.25rem; margin:0; }
 
-/* Role selector */
+/* Role selector - Updated for 3 roles */
 .role-selector { display:flex; gap:0.75rem; margin-bottom:1.25rem; }
 .role-option {
     flex:1; text-align:center; padding:0.65rem 0.5rem;
@@ -283,12 +304,24 @@ img { display:block; max-width:100%; }
 .switch-link a { color:#5f6fff; font-weight:500; }
 .switch-link a:hover { text-decoration:underline; }
 
-/* ═══════════════════ RESPONSIVE ═══════════════════ */
-@media (max-width:768px) {
+/* Doctor note */
+.doctor-note {
+    background:#eef0ff;
+    border-radius:8px;
+    padding:0.75rem;
+    margin-top:1rem;
+    text-align:center;
+    font-size:0.75rem;
+    color:#5f6fff;
 }
+.doctor-note i { margin-right:0.25rem; }
+
+/* ═══════════════════ RESPONSIVE ═══════════════════ */
 @media (max-width:520px) {
     .auth-form { padding:1.5rem 1.25rem 1.75rem; }
     .row { grid-template-columns:1fr; }
+    .role-selector { gap:0.5rem; }
+    .role-option { font-size:0.75rem; padding:0.5rem 0.25rem; }
 }
 </style>
 </head>
@@ -331,9 +364,13 @@ require_once 'navbar.php';
 
             <form method="POST" action="?action=login" novalidate>
 
+                <!-- Role selector with 3 options -->
                 <div class="role-selector">
                     <div class="role-option active" data-role="patient" onclick="selectRole('patient')">
                         <i class="fas fa-user"></i> Patient
+                    </div>
+                    <div class="role-option" data-role="doctor" onclick="selectRole('doctor')">
+                        <i class="fas fa-user-md"></i> Doctor
                     </div>
                     <div class="role-option" data-role="admin" onclick="selectRole('admin')">
                         <i class="fas fa-user-shield"></i> Admin
@@ -362,6 +399,10 @@ require_once 'navbar.php';
                 <button type="submit" name="login" class="btn-submit">Login</button>
             </form>
 
+            <div class="doctor-note">
+                <i class="fas fa-info-circle"></i> Doctors: Use your registered email and password to access your dashboard.
+            </div>
+
             <div class="divider">or continue with</div>
             <button class="social-btn" type="button" onclick="alert('Google login coming soon!')">
                 <i class="fab fa-google"></i> Continue with Google
@@ -372,10 +413,14 @@ require_once 'navbar.php';
             </div>
         </div>
 
-        <!-- ── REGISTER FORM ── -->
+        <!-- ── REGISTER FORM (Patients Only) ── -->
         <div id="registerForm" class="auth-form" style="display:<?php echo $active_form==='register' ? 'block':'none'; ?>;">
             <h2 class="form-title">Create Account</h2>
             <p class="form-subtitle">Please sign up to book an appointment</p>
+
+            <div class="doctor-note" style="background:#fef3c7; color:#d97706; margin-bottom:1rem;">
+                <i class="fas fa-info-circle"></i> This registration is for patients only. Doctors should contact administration.
+            </div>
 
             <?php if (!empty($errors) && $active_form==='register'): ?>
                 <div class="alert alert-error">
@@ -476,15 +521,19 @@ function switchTab(tab) {
     }
 }
 
-/* ── Role selector ── */
+/* ── Role selector (3 roles) ── */
 function selectRole(role) {
     var opts = document.querySelectorAll('.role-option');
     var input = document.getElementById('loginRole');
-    opts[0].classList.remove('active');
-    opts[1].classList.remove('active');
+    
+    opts.forEach(opt => opt.classList.remove('active'));
+    
     if (role === 'admin') {
-        opts[1].classList.add('active');
+        opts[2].classList.add('active');
         input.value = 'admin';
+    } else if (role === 'doctor') {
+        opts[1].classList.add('active');
+        input.value = 'doctor';
     } else {
         opts[0].classList.add('active');
         input.value = 'patient';
