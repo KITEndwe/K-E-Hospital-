@@ -28,19 +28,7 @@ define('SMTP_PASS',    'efar hrde dapx phdy');   // Gmail App Password (16 chars
 define('SMTP_TO',      'elijahmwange55@gmail.com'); // Where emails arrive
 define('HOSPITAL_NAME','K&E Hospital');
 
-/*
- * HOW TO GET YOUR GMAIL APP PASSWORD:
- * 1. Go to myaccount.google.com → Security
- * 2. Enable 2-Step Verification (required)
- * 3. Search "App passwords" → Select app: Mail, Device: Other → type "KE Hospital"
- * 4. Copy the 16-character password and paste it above replacing YOUR_APP_PASSWORD_HERE
- *    Example: 'abcd efgh ijkl mnop' (spaces are OK, Gmail ignores them)
- */
 
-/**
- * Send email via raw SMTP socket — works on XAMPP without any extra libraries.
- * Uses Gmail SMTP TLS on port 587.
- */
 function sendSmtpEmail($to, $to_name, $from, $from_name, $subject, $body_html, $body_text) {
     $smtp_host = 'smtp.gmail.com';
     $smtp_port = 587;
