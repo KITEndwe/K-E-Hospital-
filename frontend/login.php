@@ -440,7 +440,7 @@ if (file_exists('navbar.php')) {
             <!-- Dynamic info note -->
             <div id="infoNote" class="info-note">
                 <i class="fas fa-info-circle"></i> 
-                <span id="infoNoteText">Patients: Login to book appointments and view medical records.</span>
+                <span id="infoNoteText">Patients: Login to book appointments and view the profile and edit.</span>
             </div>
 
             <div class="divider">or continue with</div>
@@ -582,11 +582,11 @@ function selectRole(role) {
     } else if (role === 'doctor') {
         opts[1].classList.add('active');
         input.value = 'doctor';
-        if (infoText) infoText.innerHTML = 'Doctors: Login to manage your appointments, patients, and prescriptions.';
+        if (infoText) infoText.innerHTML = 'Doctors: Login to manage your appointments, patients, and edit your profile.';
     } else {
         opts[0].classList.add('active');
         input.value = 'patient';
-        if (infoText) infoText.innerHTML = 'Patients: Login to book appointments and view medical records.';
+        if (infoText) infoText.innerHTML = 'Patients: Login to book appointments and view/edit your profile.';
     }
 }
 
