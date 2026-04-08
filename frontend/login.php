@@ -40,13 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
 
     if (empty($errors)) {
         $hashed = password_hash($pass, PASSWORD_BCRYPT);
-        $stmt = $pdo->prepare("INSERT INTO users (full_name, email, password, phone, date_of_birth, gender, address) VALUES (?,?,?,?,?,?,?)");
+        $stmt = $pdo->prepare("INSERT INTO users (full_name, email, password, phone, date_of_birth, gender, address, is_active) VALUES (?,?,?,?,?,?,?,1)");
         try {
             $stmt->execute(array($full_name, $email, $hashed, $phone, $date_of_birth, $gender, $address));
             $success = 'Account created successfully! Please login.';
             $active_form = 'login';
+            $errors = array(); // Clear errors
         } catch(PDOException $e) {
-            $errors[] = 'Registration failed. Please try again.';
+            $errors[] = 'Registration failed: ' . $e->getMessage();
         }
     }
 }
@@ -63,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     if (empty($errors)) {
         // Admin Login
         if ($role === 'admin') {
-            $stmt = $pdo->prepare("SELECT * FROM admin WHERE email = ? AND is_active = TRUE");
+            $stmt = $pdo->prepare("SELECT * FROM admin WHERE email = ? AND is_active = 1");
             $stmt->execute(array($email));
             $admin = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($admin && password_verify($pass, $admin['password'])) {
@@ -72,34 +73,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 $_SESSION['email']     = $admin['email'];
                 $_SESSION['role']      = 'admin';
                 $_SESSION['is_admin']  = true;
+                $_SESSION['profile_image'] = $admin['profile_image'] ?? '';
+                
                 $upd = $pdo->prepare("UPDATE admin SET last_login = NOW() WHERE admin_id = ?");
                 $upd->execute(array($admin['admin_id']));
-                header('Location: ../admin/dashboard.php'); exit;
+                header('Location: ../admin/dashboard.php'); 
+                exit();
             } else {
                 $errors[] = 'Invalid admin credentials.';
             }
         }
-        // Doctor Login
+        // Doctor Login - FIXED
         elseif ($role === 'doctor') {
-            $stmt = $pdo->prepare("SELECT * FROM doctors WHERE email = ? AND is_available = 1");
+            // Remove is_available condition temporarily for testing
+            $stmt = $pdo->prepare("SELECT * FROM doctors WHERE email = ?");
             $stmt->execute(array($email));
             $doctor = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            if ($doctor && !empty($doctor['password']) && password_verify($pass, $doctor['password'])) {
-                $_SESSION['doctor_id']    = $doctor['doctor_id'];
-                $_SESSION['doctor_name']  = $doctor['name'];
-                $_SESSION['doctor_email'] = $doctor['email'];
-                $_SESSION['doctor_spec']  = $doctor['speciality'];
-                $_SESSION['role']         = 'doctor';
-                $_SESSION['is_doctor']    = true;
-                header('Location: doctor-dashboard.php'); exit;
+            // Debug - uncomment to see what's happening
+            // error_log("Doctor login attempt - Email: " . $email);
+            // error_log("Doctor found: " . ($doctor ? 'Yes' : 'No'));
+            // if($doctor) error_log("Password in DB: " . $doctor['password']);
+            
+            if ($doctor) {
+                // Check if password exists and verify
+                if (!empty($doctor['password']) && password_verify($pass, $doctor['password'])) {
+                    $_SESSION['doctor_id']    = $doctor['doctor_id'];
+                    $_SESSION['doctor_name']  = $doctor['name'];
+                    $_SESSION['doctor_email'] = $doctor['email'];
+                    $_SESSION['doctor_spec']  = $doctor['speciality'];
+                    $_SESSION['role']         = 'doctor';
+                    $_SESSION['is_doctor']    = true;
+                    $_SESSION['profile_image'] = $doctor['profile_image'] ?? '';
+                    
+                    header('Location: doctor-dashboard.php'); 
+                    exit();
+                } else {
+                    $errors[] = 'Invalid password. Please check your credentials.';
+                }
             } else {
-                $errors[] = 'Invalid doctor credentials.';
+                $errors[] = 'Doctor not found with this email.';
             }
         }
         // Patient Login
         else {
-            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND is_active = TRUE");
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND is_active = 1");
             $stmt->execute(array($email));
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($user && password_verify($pass, $user['password'])) {
@@ -108,7 +126,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 $_SESSION['email']     = $user['email'];
                 $_SESSION['role']      = 'patient';
                 $_SESSION['is_admin']  = false;
-                header('Location: index.php'); exit;
+                $_SESSION['profile_image'] = $user['profile_image'] ?? '';
+                
+                header('Location: index.php'); 
+                exit();
             } else {
                 $errors[] = 'Invalid email or password.';
             }
@@ -116,8 +137,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 }
 
-$is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['doctor_id']);
-$user_name    = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : (isset($_SESSION['doctor_name']) ? $_SESSION['doctor_name'] : '');
+// Clear errors for display
+$display_errors = $errors;
+$display_success = $success;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -154,7 +176,7 @@ img { display:block; max-width:100%; }
 .auth-container {
     background:#fff;
     border-radius:20px;
-    width:100%; max-width:480px;
+    width:100%; max-width:500px;
     box-shadow:0 25px 50px rgba(0,0,0,0.2);
     overflow:hidden;
     animation:slideUp 0.45s ease;
@@ -197,8 +219,8 @@ img { display:block; max-width:100%; }
 .alert-success{ background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
 .alert ul { padding-left:1.25rem; margin:0; }
 
-/* Role selector - Updated for 3 roles */
-.role-selector { display:flex; gap:0.75rem; margin-bottom:1.25rem; }
+/* Role selector */
+.role-selector { display:flex; gap:0.75rem; margin-bottom:1.5rem; }
 .role-option {
     flex:1; text-align:center; padding:0.65rem 0.5rem;
     border:1.5px solid #e5e7eb; border-radius:10px;
@@ -255,7 +277,7 @@ img { display:block; max-width:100%; }
 /* Row layout */
 .row { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
 
-/* Forgot */
+/* Forgot link */
 .forgot-link {
     display:block; text-align:right;
     font-size:0.78rem; color:#5f6fff;
@@ -263,7 +285,7 @@ img { display:block; max-width:100%; }
 }
 .forgot-link:hover { text-decoration:underline; }
 
-/* Submit */
+/* Submit button */
 .btn-submit {
     width:100%; padding:0.8rem;
     background:#5f6fff; color:#fff; border:none;
@@ -304,8 +326,8 @@ img { display:block; max-width:100%; }
 .switch-link a { color:#5f6fff; font-weight:500; }
 .switch-link a:hover { text-decoration:underline; }
 
-/* Doctor note */
-.doctor-note {
+/* Info notes */
+.info-note {
     background:#eef0ff;
     border-radius:8px;
     padding:0.75rem;
@@ -314,9 +336,13 @@ img { display:block; max-width:100%; }
     font-size:0.75rem;
     color:#5f6fff;
 }
-.doctor-note i { margin-right:0.25rem; }
+.info-note i { margin-right:0.25rem; }
+.info-note.warning {
+    background:#fef3c7;
+    color:#d97706;
+}
 
-/* ═══════════════════ RESPONSIVE ═══════════════════ */
+/* Responsive */
 @media (max-width:520px) {
     .auth-form { padding:1.5rem 1.25rem 1.75rem; }
     .row { grid-template-columns:1fr; }
@@ -331,7 +357,9 @@ img { display:block; max-width:100%; }
 <?php
 $current_page = 'login.php';
 $profile_image = isset($_SESSION['profile_image']) ? $_SESSION['profile_image'] : '';
-require_once 'navbar.php';
+if (file_exists('navbar.php')) {
+    require_once 'navbar.php';
+}
 ?>
 
 <!-- ═════════════ AUTH BODY ═════════════ -->
@@ -340,7 +368,7 @@ require_once 'navbar.php';
 
         <!-- Tabs -->
         <div class="auth-tabs">
-            <button class="tab-btn <?php echo $active_form==='login'    ? 'active':''; ?>" onclick="switchTab('login')">
+            <button class="tab-btn <?php echo $active_form==='login' ? 'active':''; ?>" onclick="switchTab('login')">
                 <i class="fas fa-sign-in-alt"></i> Login
             </button>
             <button class="tab-btn <?php echo $active_form==='register' ? 'active':''; ?>" onclick="switchTab('register')">
@@ -351,14 +379,22 @@ require_once 'navbar.php';
         <!-- ── LOGIN FORM ── -->
         <div id="loginForm" class="auth-form" style="display:<?php echo $active_form==='login' ? 'block':'none'; ?>;">
             <h2 class="form-title">Welcome Back</h2>
-            <p class="form-subtitle">Please login to book an appointment</p>
+            <p class="form-subtitle">Select your role and login to continue</p>
 
-            <?php if ($success && $active_form==='login'): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
+            <?php if ($display_success && $active_form==='login'): ?>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($display_success); ?>
+                </div>
             <?php endif; ?>
-            <?php if (!empty($errors) && $active_form==='login'): ?>
+            
+            <?php if (!empty($display_errors) && $active_form==='login'): ?>
                 <div class="alert alert-error">
-                    <ul><?php foreach($errors as $e): ?><li><?php echo htmlspecialchars($e); ?></li><?php endforeach; ?></ul>
+                    <i class="fas fa-exclamation-circle"></i>
+                    <ul style="margin-top:5px;">
+                        <?php foreach($display_errors as $e): ?>
+                            <li><?php echo htmlspecialchars($e); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
             <?php endif; ?>
 
@@ -379,13 +415,13 @@ require_once 'navbar.php';
                 <input type="hidden" name="role" id="loginRole" value="patient">
 
                 <div class="form-group">
-                    <label for="loginEmail">Email Address</label>
+                    <label for="loginEmail"><i class="fas fa-envelope"></i> Email Address</label>
                     <input type="email" id="loginEmail" name="email" placeholder="you@example.com"
                            value="<?php echo htmlspecialchars(isset($_POST['email']) ? $_POST['email'] : ''); ?>" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="loginPassword">Password</label>
+                    <label for="loginPassword"><i class="fas fa-lock"></i> Password</label>
                     <div class="input-wrap">
                         <input type="password" id="loginPassword" name="password" placeholder="Enter your password" required>
                         <button type="button" class="toggle-pw" onclick="togglePassword('loginPassword')">
@@ -396,11 +432,15 @@ require_once 'navbar.php';
 
                 <a href="forgot-password.php" class="forgot-link">Forgot password?</a>
 
-                <button type="submit" name="login" class="btn-submit">Login</button>
+                <button type="submit" name="login" class="btn-submit">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
             </form>
 
-            <div class="doctor-note">
-                <i class="fas fa-info-circle"></i> Doctors: Use your registered email and password to access your dashboard.
+            <!-- Dynamic info note -->
+            <div id="infoNote" class="info-note">
+                <i class="fas fa-info-circle"></i> 
+                <span id="infoNoteText">Patients: Login to book appointments and view medical records.</span>
             </div>
 
             <div class="divider">or continue with</div>
@@ -415,35 +455,41 @@ require_once 'navbar.php';
 
         <!-- ── REGISTER FORM (Patients Only) ── -->
         <div id="registerForm" class="auth-form" style="display:<?php echo $active_form==='register' ? 'block':'none'; ?>;">
-            <h2 class="form-title">Create Account</h2>
-            <p class="form-subtitle">Please sign up to book an appointment</p>
+            <h2 class="form-title">Create Patient Account</h2>
+            <p class="form-subtitle">Sign up to book appointments with our doctors</p>
 
-            <div class="doctor-note" style="background:#fef3c7; color:#d97706; margin-bottom:1rem;">
-                <i class="fas fa-info-circle"></i> This registration is for patients only. Doctors should contact administration.
+            <div class="info-note warning" style="margin-bottom:1rem;">
+                <i class="fas fa-info-circle"></i> 
+                This registration is for <strong>patients only</strong>. Doctors should contact hospital administration.
             </div>
 
-            <?php if (!empty($errors) && $active_form==='register'): ?>
+            <?php if (!empty($display_errors) && $active_form==='register'): ?>
                 <div class="alert alert-error">
-                    <ul><?php foreach($errors as $e): ?><li><?php echo htmlspecialchars($e); ?></li><?php endforeach; ?></ul>
+                    <i class="fas fa-exclamation-circle"></i>
+                    <ul style="margin-top:5px;">
+                        <?php foreach($display_errors as $e): ?>
+                            <li><?php echo htmlspecialchars($e); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
             <?php endif; ?>
 
             <form method="POST" action="?action=register" novalidate>
 
                 <div class="form-group">
-                    <label for="fullName">Full Name</label>
-                    <input type="text" id="fullName" name="full_name" placeholder="e.g. Mwila Banda"
+                    <label for="fullName"><i class="fas fa-user"></i> Full Name *</label>
+                    <input type="text" id="fullName" name="full_name" placeholder="e.g., Mwange Sylvia"
                            value="<?php echo htmlspecialchars(isset($_POST['full_name']) ? $_POST['full_name'] : ''); ?>" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="regEmail">Email Address</label>
+                    <label for="regEmail"><i class="fas fa-envelope"></i> Email Address *</label>
                     <input type="email" id="regEmail" name="email" placeholder="you@example.com"
                            value="<?php echo htmlspecialchars(isset($_POST['email']) ? $_POST['email'] : ''); ?>" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="regPassword">Password</label>
+                    <label for="regPassword"><i class="fas fa-lock"></i> Password *</label>
                     <div class="input-wrap">
                         <input type="password" id="regPassword" name="password"
                                placeholder="Min. 8 characters" required
@@ -458,12 +504,12 @@ require_once 'navbar.php';
 
                 <div class="row">
                     <div class="form-group">
-                        <label for="phone">Phone Number</label>
+                        <label for="phone"><i class="fas fa-phone"></i> Phone Number</label>
                         <input type="tel" id="phone" name="phone" placeholder="+260 7XX XXX XXX"
                                value="<?php echo htmlspecialchars(isset($_POST['phone']) ? $_POST['phone'] : ''); ?>">
                     </div>
                     <div class="form-group">
-                        <label for="dob">Date of Birth</label>
+                        <label for="dob"><i class="fas fa-calendar"></i> Date of Birth</label>
                         <input type="date" id="dob" name="date_of_birth"
                                value="<?php echo htmlspecialchars(isset($_POST['date_of_birth']) ? $_POST['date_of_birth'] : ''); ?>">
                     </div>
@@ -471,7 +517,7 @@ require_once 'navbar.php';
 
                 <div class="row">
                     <div class="form-group">
-                        <label for="gender">Gender</label>
+                        <label for="gender"><i class="fas fa-venus-mars"></i> Gender</label>
                         <select id="gender" name="gender">
                             <option value="">Select Gender</option>
                             <option value="Male"   <?php echo (isset($_POST['gender']) && $_POST['gender']==='Male')   ? 'selected':''; ?>>Male</option>
@@ -480,13 +526,15 @@ require_once 'navbar.php';
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="address">Address</label>
+                        <label for="address"><i class="fas fa-location-dot"></i> Address</label>
                         <textarea id="address" name="address" rows="2"
-                                  placeholder="Your address"><?php echo htmlspecialchars(isset($_POST['address']) ? $_POST['address'] : ''); ?></textarea>
+                                  placeholder="Your residential address"><?php echo htmlspecialchars(isset($_POST['address']) ? $_POST['address'] : ''); ?></textarea>
                     </div>
                 </div>
 
-                <button type="submit" name="register" class="btn-submit">Create account</button>
+                <button type="submit" name="register" class="btn-submit">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
             </form>
 
             <div class="switch-link">
@@ -497,15 +545,13 @@ require_once 'navbar.php';
     </div><!-- /.auth-container -->
 </div><!-- /.page-body -->
 
-
 <script>
-/* navbar JS handled by navbar.php */
-
-/* ── Tab switching ── */
+// Tab switching
 function switchTab(tab) {
-    var lf   = document.getElementById('loginForm');
-    var rf   = document.getElementById('registerForm');
+    var lf = document.getElementById('loginForm');
+    var rf = document.getElementById('registerForm');
     var tabs = document.querySelectorAll('.tab-btn');
+    
     if (tab === 'login') {
         lf.style.display = 'block';
         rf.style.display = 'none';
@@ -521,59 +567,80 @@ function switchTab(tab) {
     }
 }
 
-/* ── Role selector (3 roles) ── */
+// Role selector with dynamic info text
 function selectRole(role) {
     var opts = document.querySelectorAll('.role-option');
     var input = document.getElementById('loginRole');
+    var infoText = document.getElementById('infoNoteText');
     
     opts.forEach(opt => opt.classList.remove('active'));
     
     if (role === 'admin') {
         opts[2].classList.add('active');
         input.value = 'admin';
+        if (infoText) infoText.innerHTML = 'Admin: Login to manage hospital operations, doctors, and appointments.';
     } else if (role === 'doctor') {
         opts[1].classList.add('active');
         input.value = 'doctor';
+        if (infoText) infoText.innerHTML = 'Doctors: Login to manage your appointments, patients, and prescriptions.';
     } else {
         opts[0].classList.add('active');
         input.value = 'patient';
+        if (infoText) infoText.innerHTML = 'Patients: Login to book appointments and view medical records.';
     }
 }
 
-/* ── Password toggle ── */
+// Password toggle
 function togglePassword(id) {
-    var inp  = document.getElementById(id);
+    var inp = document.getElementById(id);
     var icon = inp.nextElementSibling.querySelector('i');
     if (inp.type === 'password') {
         inp.type = 'text';
-        icon.classList.replace('fa-eye','fa-eye-slash');
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
     } else {
         inp.type = 'password';
-        icon.classList.replace('fa-eye-slash','fa-eye');
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
     }
 }
 
-/* ── Password strength ── */
+// Password strength checker
 function checkStrength(pw) {
     var s = 0;
     if (pw.length >= 8) s++;
     if (/[A-Z]/.test(pw)) s++;
     if (/[0-9]/.test(pw)) s++;
     if (/[^A-Za-z0-9]/.test(pw)) s++;
-    var map = [
-        { w:'0%',   bg:'transparent','t':'' },
-        { w:'25%',  bg:'#ef4444',    t:'Weak' },
-        { w:'50%',  bg:'#f97316',    t:'Fair' },
-        { w:'75%',  bg:'#eab308',    t:'Good' },
-        { w:'100%', bg:'#10b981',    t:'Strong' }
+    
+    var strengthMap = [
+        { width: '0%', bg: 'transparent', text: '' },
+        { width: '25%', bg: '#ef4444', text: 'Weak' },
+        { width: '50%', bg: '#f97316', text: 'Fair' },
+        { width: '75%', bg: '#eab308', text: 'Good' },
+        { width: '100%', bg: '#10b981', text: 'Strong' }
     ];
-    var fill  = document.getElementById('sf');
+    
+    var fill = document.getElementById('sf');
     var label = document.getElementById('sl');
-    fill.style.width      = map[s].w;
-    fill.style.background = map[s].bg;
-    label.textContent     = map[s].t;
-    label.style.color     = map[s].bg;
+    
+    if (pw.length === 0) {
+        fill.style.width = '0%';
+        fill.style.background = 'transparent';
+        label.textContent = '';
+        return;
+    }
+    
+    fill.style.width = strengthMap[s].width;
+    fill.style.background = strengthMap[s].bg;
+    label.textContent = strengthMap[s].text;
+    label.style.color = strengthMap[s].bg;
 }
+
+// Set default role on page load
+document.addEventListener('DOMContentLoaded', function() {
+    selectRole('patient');
+});
 </script>
 </body>
 </html>

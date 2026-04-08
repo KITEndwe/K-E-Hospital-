@@ -32,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $doctor_id   = 'DOC' . date('Ymd') . rand(100, 999);
     $name        = trim($_POST['name'] ?? '');
     $email       = trim($_POST['email'] ?? '');
+    $password    = trim($_POST['password'] ?? '');
+    $confirm_password = trim($_POST['confirm_password'] ?? '');
     $speciality  = trim($_POST['speciality'] ?? '');
     $degree      = trim($_POST['degree'] ?? '');
     $experience  = trim($_POST['experience'] ?? '');
@@ -56,17 +58,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if (empty($name) || empty($speciality) || empty($degree) || empty($experience) || $fees <= 0) {
-        $error_message = 'Please fill in all required fields marked with *.';
-    } elseif (empty($error_message)) {
+    // Validation
+    if (empty($name)) {
+        $error_message = 'Please enter doctor\'s full name.';
+    } elseif (empty($speciality)) {
+        $error_message = 'Please select doctor\'s speciality.';
+    } elseif (empty($degree)) {
+        $error_message = 'Please enter doctor\'s degree.';
+    } elseif (empty($experience)) {
+        $error_message = 'Please enter doctor\'s experience.';
+    } elseif ($fees <= 0) {
+        $error_message = 'Please enter a valid consultation fee.';
+    } elseif (empty($email)) {
+        $error_message = 'Please enter doctor\'s email address.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error_message = 'Please enter a valid email address.';
+    } elseif (empty($password)) {
+        $error_message = 'Please enter a password for the doctor.';
+    } elseif (strlen($password) < 8) {
+        $error_message = 'Password must be at least 8 characters long.';
+    } elseif ($password !== $confirm_password) {
+        $error_message = 'Passwords do not match.';
+    } else {
+        // Check if email already exists
+        $check_stmt = $pdo->prepare("SELECT doctor_id FROM doctors WHERE email = ?");
+        $check_stmt->execute([$email]);
+        if ($check_stmt->rowCount() > 0) {
+            $error_message = 'A doctor with this email already exists.';
+        }
+    }
+
+    if (empty($error_message)) {
         try {
+            // Hash the password
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            
             $stmt = $pdo->prepare("
-                INSERT INTO doctors (doctor_id, name, email, profile_image, speciality, degree, experience, about, fees, address_line1, address_line2, is_available, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW())
+                INSERT INTO doctors (doctor_id, name, email, password, profile_image, speciality, degree, experience, about, fees, address_line1, address_line2, is_available, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW())
             ");
-            $stmt->execute([$doctor_id, $name, $email, $profile_image, $speciality, $degree, $experience, $about, $fees, $address_line1, $address_line2]);
-            $success_message = 'Doctor added successfully! Doctor ID: ' . $doctor_id;
+            $stmt->execute([
+                $doctor_id, $name, $email, $hashed_password, $profile_image, 
+                $speciality, $degree, $experience, $about, $fees, 
+                $address_line1, $address_line2
+            ]);
+            
+            $success_message = 'Doctor added successfully! Doctor ID: ' . $doctor_id . '<br>Email: ' . htmlspecialchars($email) . '<br>Password: The password has been set.';
             $_POST = [];
+            
+            // Reset form via JavaScript after successful submission
+            echo "<script>setTimeout(function() { resetForm(); }, 2000);</script>";
         } catch (PDOException $e) {
             $error_message = 'Failed to add doctor: ' . $e->getMessage();
         }
@@ -220,6 +261,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         .form-group { margin-bottom: 1rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #334155; font-size: 0.875rem; }
         .form-group label .required { color: #ef4444; margin-left: 0.25rem; }
+        .form-group .password-hint { font-size: 0.7rem; color: #64748b; margin-top: 0.25rem; display: block; }
 
         .form-group input,
         .form-group select,
@@ -302,6 +344,25 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         .alert-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
         .alert i { font-size: 1.25rem; }
 
+        .password-strength {
+            margin-top: 0.5rem;
+            height: 4px;
+            border-radius: 2px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+        .password-strength-text {
+            font-size: 0.7rem;
+            margin-top: 0.25rem;
+            color: #64748b;
+        }
+
         .mobile-menu-toggle {
             display: none;
             background: none; border: none;
@@ -320,6 +381,23 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         }
 
         .sidebar-overlay.active { display: block; }
+
+        .show-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #94a3b8;
+        }
+        
+        .password-wrapper {
+            position: relative;
+        }
+        
+        .password-wrapper input {
+            padding-right: 35px;
+        }
 
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); position: fixed; z-index: 1000; }
@@ -341,7 +419,6 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         <div class="sidebar-header">
             <a href="dashboard.php" class="sidebar-logo">
                 <img src="assets/admin_logo.svg" width="150px" alt="">
-                
             </a>
         </div>
         <nav class="sidebar-nav">
@@ -376,8 +453,10 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                 <button class="mobile-menu-toggle" id="mobileMenuToggle">
                     <i class="fas fa-bars"></i>
                 </button>
-                <h1>Add New Doctor</h1>
-                <p>Add a new medical professional to your hospital team</p>
+                <div>
+                    <h1>Add New Doctor</h1>
+                    <p>Add a new medical professional to your hospital team</p>
+                </div>
             </div>
             <div class="user-info">
                 <div class="admin-badge">
@@ -396,11 +475,17 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
             </div>
 
             <?php if ($success_message): ?>
-                <div class="alert alert-success"><i class="fas fa-check-circle"></i><?php echo $success_message; ?></div>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <?php echo $success_message; ?>
+                </div>
             <?php endif; ?>
 
             <?php if ($error_message): ?>
-                <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i><?php echo $error_message; ?></div>
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <?php echo $error_message; ?>
+                </div>
             <?php endif; ?>
 
             <form method="POST" enctype="multipart/form-data" id="doctorForm">
@@ -411,8 +496,29 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                     </div>
 
                     <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" name="email" placeholder="doctor@kehospital.com" value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+                        <label>Email Address <span class="required">*</span></label>
+                        <input type="email" name="email" placeholder="doctor@kehospital.com" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password <span class="required">*</span></label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" name="password" placeholder="Min. 8 characters" required oninput="checkPasswordStrength(this.value)">
+                            <i class="fas fa-eye show-password" onclick="togglePassword('password')"></i>
+                        </div>
+                        <div class="password-strength">
+                            <div class="password-strength-bar" id="strengthBar"></div>
+                        </div>
+                        <div class="password-strength-text" id="strengthText"></div>
+                        <small class="password-hint">Password must be at least 8 characters with uppercase, lowercase, and numbers</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirm Password <span class="required">*</span></label>
+                        <div class="password-wrapper">
+                            <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm password" required>
+                            <i class="fas fa-eye show-password" onclick="togglePassword('confirm_password')"></i>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -487,6 +593,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
 </div>
 
 <script>
+    // Mobile menu toggle
     const mobileToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
@@ -498,6 +605,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
     overlay?.addEventListener('click', closeMenu);
     window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMenu(); });
 
+    // Image preview
     function previewImage(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
@@ -509,17 +617,110 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
         }
     }
 
+    // Password strength checker
+    function checkPasswordStrength(password) {
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+        
+        let strength = 0;
+        let message = '';
+        let color = '';
+        
+        if (password.length >= 8) strength++;
+        if (password.match(/[a-z]+/)) strength++;
+        if (password.match(/[A-Z]+/)) strength++;
+        if (password.match(/[0-9]+/)) strength++;
+        if (password.match(/[$@#&!]+/)) strength++;
+        
+        switch(strength) {
+            case 0:
+            case 1:
+                message = 'Very Weak';
+                color = '#ef4444';
+                strengthBar.style.width = '20%';
+                break;
+            case 2:
+                message = 'Weak';
+                color = '#f97316';
+                strengthBar.style.width = '40%';
+                break;
+            case 3:
+                message = 'Fair';
+                color = '#eab308';
+                strengthBar.style.width = '60%';
+                break;
+            case 4:
+                message = 'Good';
+                color = '#10b981';
+                strengthBar.style.width = '80%';
+                break;
+            case 5:
+                message = 'Strong';
+                color = '#10b981';
+                strengthBar.style.width = '100%';
+                break;
+        }
+        
+        strengthBar.style.backgroundColor = color;
+        strengthText.textContent = message;
+        strengthText.style.color = color;
+        
+        if (password.length === 0) {
+            strengthBar.style.width = '0%';
+            strengthText.textContent = '';
+        }
+    }
+
+    // Toggle password visibility
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = field.nextElementSibling;
+        
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Reset form
     function resetForm() {
         document.getElementById('doctorForm').reset();
         document.getElementById('imagePreview').style.display = 'none';
         document.getElementById('previewImg').src = '';
+        document.getElementById('strengthBar').style.width = '0%';
+        document.getElementById('strengthText').textContent = '';
     }
 
+    // Form validation before submit
     document.getElementById('doctorForm').addEventListener('submit', function(e) {
-        if (document.querySelector('input[name="fees"]').value <= 0) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const fee = document.querySelector('input[name="fees"]').value;
+        
+        if (password.length < 8) {
+            e.preventDefault();
+            alert('Password must be at least 8 characters long.');
+            return false;
+        }
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match.');
+            return false;
+        }
+        
+        if (fee <= 0) {
             e.preventDefault();
             alert('Please enter a valid consultation fee.');
+            return false;
         }
+        
+        return true;
     });
 </script>
 </body>

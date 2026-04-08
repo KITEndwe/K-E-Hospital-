@@ -1,6 +1,7 @@
 <?php
+// admin/logout.php
 session_start();
 session_destroy();
-header('Location: ../frontend/index.php');
+header('Location: ../frontend/login.php');
 exit();
 ?>

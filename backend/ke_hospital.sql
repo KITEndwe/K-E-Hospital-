@@ -444,3 +444,123 @@ CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);
 --doc8@kehospital.co.zm  LillianDoc@2024
 --doc9@kehospital.co.zm  ThandDoc@2024
 --doc10@kehospital.co.zm JosephDoc@2024 
+
+
+
+-- all doctors and their emails set correctly
+UPDATE doctors SET 
+    email = CASE doctor_id
+        WHEN 'doc1' THEN 'doc1@kehospital.co.zm'
+        WHEN 'doc2' THEN 'doc2@kehospital.co.zm'
+        WHEN 'doc3' THEN 'doc3@kehospital.co.zm'
+        WHEN 'doc4' THEN 'doc4@kehospital.co.zm'
+        WHEN 'doc5' THEN 'doc5@kehospital.co.zm'
+        WHEN 'doc6' THEN 'doc6@kehospital.co.zm'
+        WHEN 'doc7' THEN 'doc7@kehospital.co.zm'
+        WHEN 'doc8' THEN 'doc8@kehospital.co.zm'
+        WHEN 'doc9' THEN 'doc9@kehospital.co.zm'
+        WHEN 'doc10' THEN 'doc10@kehospital.co.zm'
+    END
+WHERE doctor_id IN ('doc1','doc2','doc3','doc4','doc5','doc6','doc7','doc8','doc9','doc10');
+
+-- Update passwords with bcrypt hashes
+-- Password:                     MwilaDoc@2024
+UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc1';
+
+-- Password: MutintaDoc@2024  
+UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc2';
+
+-- Password: LuyandoDoc@2024
+UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc3';
+
+-- Password: ChrisDoc@2024
+UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc4';
+
+-- Password: ChipoDoc@2024
+UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc5';
+
+-- Password: KelvinDoc@2024
+UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc6';
+
+-- Password: PatrickDoc@2024
+UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc7';
+
+-- Password: LillianDoc@2024
+UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc8';
+
+-- Password: ThandDoc@2024
+UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc9';
+
+-- Password: JosephDoc@2024
+UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc10';
+
+
+--Hash passwords
+-- After running the PHP script once, you'll get actual hashes like these:
+-- Replace 'YOUR_GENERATED_HASH_HERE' with the actual hash from the PHP script output
+
+UPDATE doctors SET 
+    email = 'doc1@kehospital.co.zm',
+    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH1'
+WHERE doctor_id = 'doc1';
+
+UPDATE doctors SET 
+    email = 'doc2@kehospital.co.zm',
+    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH2'
+WHERE doctor_id = 'doc2';
+
+UPDATE doctors SET 
+    email = 'doc3@kehospital.co.zm',
+    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH3'
+WHERE doctor_id = 'doc3';
+
+UPDATE doctors SET 
+    email = 'doc4@kehospital.co.zm',
+    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH4'
+WHERE doctor_id = 'doc4';
+
+UPDATE doctors SET 
+    email = 'doc5@kehospital.co.zm',
+    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH5'
+WHERE doctor_id = 'doc5';
+
+UPDATE doctors SET 
+    email = 'doc6@kehospital.co.zm',
+    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH6'
+WHERE doctor_id = 'doc6';
+
+UPDATE doctors SET 
+    email = 'doc7@kehospital.co.zm',
+    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH7'
+WHERE doctor_id = 'doc7';
+
+UPDATE doctors SET 
+    email = 'doc8@kehospital.co.zm',
+    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH8'
+WHERE doctor_id = 'doc8';
+
+UPDATE doctors SET 
+    email = 'doc9@kehospital.co.zm',
+    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH9'
+WHERE doctor_id = 'doc9';
+
+UPDATE doctors SET 
+    email = 'doc10@kehospital.co.zm',
+    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH10'
+WHERE doctor_id = 'doc10';
+
+
+
+
+
+-- Missing columns to doctors table
+ALTER TABLE doctors 
+ADD COLUMN IF NOT EXISTS phone VARCHAR(20) AFTER email,
+ADD COLUMN IF NOT EXISTS degree VARCHAR(100) AFTER speciality,
+ADD COLUMN IF NOT EXISTS about TEXT AFTER experience,
+ADD COLUMN IF NOT EXISTS address_line1 VARCHAR(255) AFTER fees,
+ADD COLUMN IF NOT EXISTS address_line2 VARCHAR(255) AFTER address_line1,
+ADD COLUMN IF NOT EXISTS consultation_duration INT DEFAULT 30 AFTER address_line2,
+ADD COLUMN IF NOT EXISTS last_login TIMESTAMP NULL AFTER total_reviews,
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at;
+
