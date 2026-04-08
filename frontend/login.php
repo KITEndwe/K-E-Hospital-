@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     $date_of_birth= trim(isset($_POST['date_of_birth'])? $_POST['date_of_birth']: '');
     $gender       = trim(isset($_POST['gender'])       ? $_POST['gender']       : '');
     $address      = trim(isset($_POST['address'])      ? $_POST['address']      : '');
+    $blood_group  = trim(isset($_POST['blood_group'])  ? $_POST['blood_group']  : '');
 
     if (!$full_name) $errors[] = 'Full name is required.';
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'A valid email address is required.';
@@ -40,9 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
 
     if (empty($errors)) {
         $hashed = password_hash($pass, PASSWORD_BCRYPT);
-        $stmt = $pdo->prepare("INSERT INTO users (full_name, email, password, phone, date_of_birth, gender, address, is_active) VALUES (?,?,?,?,?,?,?,1)");
+        $stmt = $pdo->prepare("INSERT INTO users (full_name, email, password, phone, date_of_birth, gender, address, blood_group, is_active) VALUES (?,?,?,?,?,?,?,?,1)");
         try {
-            $stmt->execute(array($full_name, $email, $hashed, $phone, $date_of_birth, $gender, $address));
+            $stmt->execute(array($full_name, $email, $hashed, $phone, $date_of_birth, $gender, $address, $blood_group));
             $success = 'Account created successfully! Please login.';
             $active_form = 'login';
             $errors = array(); // Clear errors
@@ -176,7 +177,7 @@ img { display:block; max-width:100%; }
 .auth-container {
     background:#fff;
     border-radius:20px;
-    width:100%; max-width:500px;
+    width:100%; max-width:550px;
     box-shadow:0 25px 50px rgba(0,0,0,0.2);
     overflow:hidden;
     animation:slideUp 0.45s ease;
@@ -238,6 +239,7 @@ img { display:block; max-width:100%; }
     display:block; font-size:0.82rem; font-weight:500;
     color:#4b5264; margin-bottom:5px;
 }
+.form-group label .required { color:#ef4444; }
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -340,6 +342,17 @@ img { display:block; max-width:100%; }
 .info-note.warning {
     background:#fef3c7;
     color:#d97706;
+}
+
+/* Blood group badge style */
+.blood-group-badge {
+    display:inline-block;
+    padding:0.25rem 0.5rem;
+    background:#f0fdf4;
+    color:#065f46;
+    border-radius:6px;
+    font-size:0.7rem;
+    font-weight:600;
 }
 
 /* Responsive */
@@ -477,19 +490,19 @@ if (file_exists('navbar.php')) {
             <form method="POST" action="?action=register" novalidate>
 
                 <div class="form-group">
-                    <label for="fullName"><i class="fas fa-user"></i> Full Name *</label>
+                    <label for="fullName"><i class="fas fa-user"></i> Full Name <span class="required">*</span></label>
                     <input type="text" id="fullName" name="full_name" placeholder="e.g., Mwange Sylvia"
                            value="<?php echo htmlspecialchars(isset($_POST['full_name']) ? $_POST['full_name'] : ''); ?>" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="regEmail"><i class="fas fa-envelope"></i> Email Address *</label>
+                    <label for="regEmail"><i class="fas fa-envelope"></i> Email Address <span class="required">*</span></label>
                     <input type="email" id="regEmail" name="email" placeholder="you@example.com"
                            value="<?php echo htmlspecialchars(isset($_POST['email']) ? $_POST['email'] : ''); ?>" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="regPassword"><i class="fas fa-lock"></i> Password *</label>
+                    <label for="regPassword"><i class="fas fa-lock"></i> Password <span class="required">*</span></label>
                     <div class="input-wrap">
                         <input type="password" id="regPassword" name="password"
                                placeholder="Min. 8 characters" required
@@ -526,10 +539,25 @@ if (file_exists('navbar.php')) {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="address"><i class="fas fa-location-dot"></i> Address</label>
-                        <textarea id="address" name="address" rows="2"
-                                  placeholder="Your residential address"><?php echo htmlspecialchars(isset($_POST['address']) ? $_POST['address'] : ''); ?></textarea>
+                        <label for="blood_group"><i class="fas fa-tint"></i> Blood Group</label>
+                        <select id="blood_group" name="blood_group">
+                            <option value="">Select Blood Group</option>
+                            <option value="A+"  <?php echo (isset($_POST['blood_group']) && $_POST['blood_group']==='A+')  ? 'selected':''; ?>>A+</option>
+                            <option value="A-"  <?php echo (isset($_POST['blood_group']) && $_POST['blood_group']==='A-')  ? 'selected':''; ?>>A-</option>
+                            <option value="B+"  <?php echo (isset($_POST['blood_group']) && $_POST['blood_group']==='B+')  ? 'selected':''; ?>>B+</option>
+                            <option value="B-"  <?php echo (isset($_POST['blood_group']) && $_POST['blood_group']==='B-')  ? 'selected':''; ?>>B-</option>
+                            <option value="AB+" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group']==='AB+') ? 'selected':''; ?>>AB+</option>
+                            <option value="AB-" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group']==='AB-') ? 'selected':''; ?>>AB-</option>
+                            <option value="O+"  <?php echo (isset($_POST['blood_group']) && $_POST['blood_group']==='O+')  ? 'selected':''; ?>>O+</option>
+                            <option value="O-"  <?php echo (isset($_POST['blood_group']) && $_POST['blood_group']==='O-')  ? 'selected':''; ?>>O-</option>
+                        </select>
                     </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="address"><i class="fas fa-location-dot"></i> Address</label>
+                    <textarea id="address" name="address" rows="2"
+                              placeholder="Your residential address"><?php echo htmlspecialchars(isset($_POST['address']) ? $_POST['address'] : ''); ?></textarea>
                 </div>
 
                 <button type="submit" name="register" class="btn-submit">
