@@ -492,7 +492,7 @@ $admin_name = $_SESSION['full_name'] ?? 'Admin';
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Full Name <span class="required">*</span></label>
-                        <input type="text" name="name" placeholder="Dr. John Doe" required value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>">
+                        <input type="text" name="name" placeholder="Dr. Agness Mwila" required value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>">
                     </div>
 
                     <div class="form-group">
