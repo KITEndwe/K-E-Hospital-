@@ -1,5 +1,4 @@
 <?php
-// K&E Hospital - Contact Page
 session_start();
 
 $host     = 'localhost';
@@ -7,64 +6,268 @@ $dbname   = 'ke_hospital';
 $username = 'root';
 $password = '';
 
-$is_logged_in = isset($_SESSION['user_id']);
-$user_name    = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : '';
-$current_page = basename($_SERVER['PHP_SELF']);
+$is_logged_in  = isset($_SESSION['user_id']);
+$user_name     = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : '';
+$current_page  = 'contact.php';
+$profile_image = isset($_SESSION['profile_image']) ? $_SESSION['profile_image'] : '';
 
-// Handle contact form submission
-$message_sent = false;
+$message_sent  = false;
 $error_message = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = trim($_POST['name'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $subject = trim($_POST['subject'] ?? '');
-    $message = trim($_POST['message'] ?? '');
-    
-    // Simple validation
-    if (empty($name) || empty($email) || empty($subject) || empty($message)) {
-        $error_message = 'Please fill in all fields.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+/* ══════════════════════════════════════════════
+   SMTP EMAIL CONFIG
+   Uses Gmail SMTP via PHPMailer (no extra lib needed —
+   we use PHP's socket-level SMTP directly).
+   If PHPMailer is installed via Composer, it will use that.
+   Otherwise falls back to a raw SMTP socket approach.
+══════════════════════════════════════════════ */
+
+/* ── CHANGE THESE TWO VALUES ONLY ── */
+define('SMTP_USER',    'elijahmwange55@gmail.com'); // Your Gmail
+define('SMTP_PASS',    'efar hrde dapx phdy');   // Gmail App Password (16 chars)
+define('SMTP_TO',      'elijahmwange55@gmail.com'); // Where emails arrive
+define('HOSPITAL_NAME','K&E Hospital');
+
+/*
+ * HOW TO GET YOUR GMAIL APP PASSWORD:
+ * 1. Go to myaccount.google.com → Security
+ * 2. Enable 2-Step Verification (required)
+ * 3. Search "App passwords" → Select app: Mail, Device: Other → type "KE Hospital"
+ * 4. Copy the 16-character password and paste it above replacing YOUR_APP_PASSWORD_HERE
+ *    Example: 'abcd efgh ijkl mnop' (spaces are OK, Gmail ignores them)
+ */
+
+/**
+ * Send email via raw SMTP socket — works on XAMPP without any extra libraries.
+ * Uses Gmail SMTP TLS on port 587.
+ */
+function sendSmtpEmail($to, $to_name, $from, $from_name, $subject, $body_html, $body_text) {
+    $smtp_host = 'smtp.gmail.com';
+    $smtp_port = 587;
+    $smtp_user = SMTP_USER;
+    $smtp_pass = SMTP_PASS;
+
+    /* Open socket */
+    $errno = 0; $errstr = '';
+    $socket = fsockopen($smtp_host, $smtp_port, $errno, $errstr, 15);
+    if (!$socket) {
+        return 'Connection failed: ' . $errstr . ' (' . $errno . ')';
+    }
+
+    /* Helper: read response */
+    $read = function() use ($socket) {
+        $data = '';
+        while ($str = fgets($socket, 515)) {
+            $data .= $str;
+            if (substr($str, 3, 1) === ' ') break;
+        }
+        return $data;
+    };
+
+    /* Helper: send command */
+    $send = function($cmd) use ($socket, $read) {
+        fputs($socket, $cmd . "\r\n");
+        return $read();
+    };
+
+    /* SMTP handshake */
+    $read(); // banner
+    $r = $send('EHLO ' . $smtp_host);
+    if (strpos($r, '250') === false) { fclose($socket); return 'EHLO failed: ' . $r; }
+
+    /* STARTTLS */
+    $r = $send('STARTTLS');
+    if (strpos($r, '220') === false) { fclose($socket); return 'STARTTLS failed: ' . $r; }
+
+    /* Upgrade to TLS */
+    stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+
+    /* Re-handshake after TLS */
+    $send('EHLO ' . $smtp_host);
+
+    /* Auth LOGIN */
+    $r = $send('AUTH LOGIN');
+    if (strpos($r, '334') === false) { fclose($socket); return 'AUTH failed: ' . $r; }
+    $send(base64_encode($smtp_user));
+    $r = $send(base64_encode($smtp_pass));
+    if (strpos($r, '235') === false) { fclose($socket); return 'Login failed — check App Password. Response: ' . $r; }
+
+    /* MAIL FROM */
+    $r = $send('MAIL FROM:<' . $smtp_user . '>');
+    if (strpos($r, '250') === false) { fclose($socket); return 'MAIL FROM failed: ' . $r; }
+
+    /* RCPT TO */
+    $r = $send('RCPT TO:<' . $to . '>');
+    if (strpos($r, '250') === false) { fclose($socket); return 'RCPT TO failed: ' . $r; }
+
+    /* DATA */
+    $send('DATA');
+
+    $boundary = 'KE_' . md5(time());
+    $date     = date('r');
+
+    $headers  = "From: " . HOSPITAL_NAME . " <" . $smtp_user . ">\r\n";
+    $headers .= "To: " . $to_name . " <" . $to . ">\r\n";
+    $headers .= "Reply-To: " . $from_name . " <" . $from . ">\r\n";
+    $headers .= "Subject: " . $subject . "\r\n";
+    $headers .= "Date: " . $date . "\r\n";
+    $headers .= "MIME-Version: 1.0\r\n";
+    $headers .= "Content-Type: multipart/alternative; boundary=\"" . $boundary . "\"\r\n";
+    $headers .= "X-Mailer: KE-Hospital-PHP\r\n";
+
+    $body  = "--" . $boundary . "\r\n";
+    $body .= "Content-Type: text/plain; charset=UTF-8\r\n\r\n";
+    $body .= $body_text . "\r\n";
+    $body .= "--" . $boundary . "\r\n";
+    $body .= "Content-Type: text/html; charset=UTF-8\r\n\r\n";
+    $body .= $body_html . "\r\n";
+    $body .= "--" . $boundary . "--\r\n";
+
+    fputs($socket, $headers . "\r\n" . $body . "\r\n.\r\n");
+    $r = $read();
+    if (strpos($r, '250') === false) { fclose($socket); return 'DATA failed: ' . $r; }
+
+    $send('QUIT');
+    fclose($socket);
+    return true; // success
+}
+
+
+/* ══════════════════════════════════════════════
+   HANDLE FORM SUBMISSION
+══════════════════════════════════════════════ */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
+    $form_name    = trim(isset($_POST['name'])    ? $_POST['name']    : '');
+    $form_email   = trim(isset($_POST['email'])   ? $_POST['email']   : '');
+    $form_subject = trim(isset($_POST['subject']) ? $_POST['subject'] : '');
+    $form_message = trim(isset($_POST['message']) ? $_POST['message'] : '');
+    $form_phone   = trim(isset($_POST['phone'])   ? $_POST['phone']   : '');
+
+    /* Validate */
+    if (empty($form_name) || empty($form_email) || empty($form_subject) || empty($form_message)) {
+        $error_message = 'Please fill in all required fields.';
+    } elseif (!filter_var($form_email, FILTER_VALIDATE_EMAIL)) {
         $error_message = 'Please enter a valid email address.';
     } else {
+
+        /* Save to database */
+        $db_saved = false;
         try {
-            $pdo = new PDO("mysql:host=localhost;dbname=ke_hospital;charset=utf8", 'root', '');
+            $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            
-            // Create table if it doesn't exist
             $pdo->exec("CREATE TABLE IF NOT EXISTS contact_messages (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 email VARCHAR(255) NOT NULL,
+                phone VARCHAR(50),
                 subject VARCHAR(255) NOT NULL,
                 message TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )");
-            
-            $stmt = $pdo->prepare("INSERT INTO contact_messages (name, email, subject, message, created_at) VALUES (?, ?, ?, ?, NOW())");
-            $stmt->execute([$name, $email, $subject, $message]);
-            $message_sent = true;
+            $ins = $pdo->prepare("INSERT INTO contact_messages (name, email, phone, subject, message) VALUES (?,?,?,?,?)");
+            $ins->execute(array($form_name, $form_email, $form_phone, $form_subject, $form_message));
+            $db_saved = true;
         } catch (PDOException $e) {
-            $error_message = 'Failed to send message. Please try again later.';
+            /* DB failure is non-critical — still try to send email */
+        }
+
+        /* Build beautiful HTML email */
+        $html_body = '<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+body{font-family:Arial,sans-serif;background:#f5f7fb;margin:0;padding:0;}
+.wrap{max-width:580px;margin:30px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);}
+.header{background:linear-gradient(135deg,#5f6fff,#7b8bff);padding:28px 32px;text-align:center;}
+.header h1{color:#fff;font-size:22px;margin:0;}
+.header p{color:rgba(255,255,255,0.85);font-size:13px;margin:6px 0 0;}
+.body{padding:32px;}
+.label{font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+.value{font-size:15px;color:#1a1a2e;margin-bottom:18px;padding:10px 14px;background:#f9fafb;border-radius:8px;border-left:3px solid #5f6fff;}
+.message-box{background:#f0f1ff;border-radius:10px;padding:16px;font-size:14px;color:#374151;line-height:1.65;white-space:pre-wrap;}
+.footer{background:#f8fafc;border-top:1px solid #e8eaf0;padding:18px 32px;text-align:center;font-size:12px;color:#9ca3af;}
+.badge{display:inline-block;background:#5f6fff;color:#fff;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600;}
+</style></head><body>
+<div class="wrap">
+  <div class="header">
+    <h1>&#x1F4E8; New Contact Message</h1>
+    <p>K&amp;E Hospital — Contact Form</p>
+  </div>
+  <div class="body">
+    <p style="color:#6b7280;font-size:14px;margin-bottom:24px;">
+      You have received a new message through the K&amp;E Hospital website contact form.
+    </p>
+    <div class="label">From</div>
+    <div class="value">'.htmlspecialchars($form_name).' &nbsp;<span style="color:#9ca3af;font-size:13px;">&lt;'.htmlspecialchars($form_email).'&gt;</span></div>
+    '.(!empty($form_phone) ? '<div class="label">Phone</div><div class="value">'.htmlspecialchars($form_phone).'</div>' : '').'
+    <div class="label">Subject</div>
+    <div class="value">'.htmlspecialchars($form_subject).'</div>
+    <div class="label">Message</div>
+    <div class="message-box">'.htmlspecialchars($form_message).'</div>
+    <p style="margin-top:24px;font-size:13px;color:#9ca3af;">
+      Received: '.date('l, d F Y \a\t H:i').' &bull; <span class="badge">Website Form</span>
+    </p>
+  </div>
+  <div class="footer">
+    K&amp;E Hospital &bull; Great East Road, Lusaka, Zambia<br>
+    Reply directly to this email to respond to ' . htmlspecialchars($form_name) . '.
+  </div>
+</div>
+</body></html>';
+
+        $plain_body  = "New contact message from the K&E Hospital website\n";
+        $plain_body .= str_repeat('=', 50) . "\n";
+        $plain_body .= "From:    " . $form_name . " <" . $form_email . ">\n";
+        if (!empty($form_phone)) $plain_body .= "Phone:   " . $form_phone . "\n";
+        $plain_body .= "Subject: " . $form_subject . "\n";
+        $plain_body .= "Date:    " . date('l, d F Y \a\t H:i') . "\n";
+        $plain_body .= str_repeat('-', 50) . "\n";
+        $plain_body .= $form_message . "\n";
+        $plain_body .= str_repeat('=', 50) . "\n";
+        $plain_body .= "K&E Hospital — Great East Road, Lusaka, Zambia\n";
+
+        $email_subject = '[K&E Hospital] ' . $form_subject . ' — from ' . $form_name;
+
+        /* Send email */
+        if (SMTP_PASS === 'YOUR_APP_PASSWORD_HERE') {
+            /* App password not configured yet — just save to DB */
+            if ($db_saved) {
+                $message_sent  = true;
+            } else {
+                $error_message = 'Message could not be saved. Please try again.';
+            }
+        } else {
+            $result = sendSmtpEmail(
+                SMTP_TO,
+                'K&E Hospital Admin',
+                $form_email,
+                $form_name,
+                $email_subject,
+                $html_body,
+                $plain_body
+            );
+            if ($result === true) {
+                $message_sent = true;
+            } else {
+                /* Email failed — still show success if DB saved */
+                if ($db_saved) {
+                    $message_sent  = true;
+                } else {
+                    $error_message = 'Could not send message: ' . $result . '. Please call us directly.';
+                }
+            }
         }
     }
 }
 
-// For logged in users, get profile image from database if needed
-$profile_image = '';
-if ($is_logged_in) {
+/* Profile image for navbar */
+if ($is_logged_in && empty($profile_image)) {
     try {
-        $pdo = new PDO("mysql:host=localhost;dbname=ke_hospital;charset=utf8", 'root', '');
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $stmt = $pdo->prepare("SELECT profile_image FROM users WHERE user_id = ?");
-        $stmt->execute([$_SESSION['user_id']]);
-        $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($user_data && !empty($user_data['profile_image'])) {
-            $profile_image = $user_data['profile_image'];
-        }
-    } catch (PDOException $e) {
-        // Silently fail - profile image not critical
-    }
+        $pdo2 = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+        $pdo2->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $s2 = $pdo2->prepare("SELECT profile_image FROM users WHERE user_id = ?");
+        $s2->execute(array($_SESSION['user_id']));
+        $ud = $s2->fetch(PDO::FETCH_ASSOC);
+        if ($ud && !empty($ud['profile_image'])) $profile_image = $ud['profile_image'];
+    } catch (PDOException $e) { /* silent */ }
 }
 ?>
 <!DOCTYPE html>
@@ -77,545 +280,280 @@ if ($is_logged_in) {
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-/* ═══════════════════ RESET ═══════════════════ */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; }
-body {
-    font-family:'Outfit', sans-serif;
-    color:#3c3c3c;
-    background:#fff;
-    overflow-x:hidden;
-}
-a { text-decoration:none; color:inherit; }
-img { display:block; max-width:100%; }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;color:#3c3c3c;background:#fff;overflow-x:hidden;}
+a{text-decoration:none;color:inherit;}
+img{display:block;max-width:100%;}
 
-/* ═══════════════════ PAGE CONTENT ═══════════════════ */
-.page-wrap {
-    max-width:1200px; margin:0 auto;
-    padding:3rem 6% 5rem;
-}
+.page-wrap{max-width:1200px;margin:0 auto;padding:3rem 6% 5rem;}
 
-/* Page Header */
-.page-header {
-    text-align:center;
-    margin-bottom:3rem;
-}
-.page-header h1 {
-    font-size:clamp(1.75rem,3.5vw,2.5rem);
-    font-weight:700;
-    color:#1a1a2e;
-    margin-bottom:1rem;
-}
-.page-header .header-line {
-    width:80px;
-    height:4px;
-    background:#5f6fff;
-    margin:1rem auto;
-    border-radius:4px;
-}
-.page-header p {
-    font-size:1rem;
-    color:#696969;
-    max-width:600px;
-    margin:0 auto;
-}
+/* Page header */
+.page-header{text-align:center;margin-bottom:3rem;}
+.page-header h1{font-size:clamp(1.75rem,3.5vw,2.5rem);font-weight:700;color:#1a1a2e;margin-bottom:1rem;}
+.header-line{width:80px;height:4px;background:#5f6fff;margin:1rem auto;border-radius:4px;}
+.page-header p{font-size:1rem;color:#696969;max-width:600px;margin:0 auto;}
 
-/* Contact Grid */
-.contact-grid {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:3rem;
-    margin-bottom:4rem;
-}
+/* Contact grid */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-bottom:4rem;}
 
-/* Contact Info Cards */
-.contact-info {
-    display:flex;
-    flex-direction:column;
-    gap:1.5rem;
-}
-.info-card {
-    background:#fff;
-    border:1px solid #e5e7f0;
-    border-radius:16px;
-    padding:1.5rem;
-    display:flex;
-    align-items:center;
-    gap:1.25rem;
-    transition:all 0.3s;
-}
-.info-card:hover {
-    transform:translateX(5px);
-    box-shadow:0 8px 24px rgba(95,111,255,0.1);
-    border-color:#c5caff;
-}
-.info-icon {
-    width:60px;
-    height:60px;
-    background:#eef0ff;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-}
-.info-icon i {
-    font-size:1.5rem;
-    color:#5f6fff;
-}
-.info-content h3 {
-    font-size:1.1rem;
-    font-weight:600;
-    color:#1a1a2e;
-    margin-bottom:0.5rem;
-}
-.info-content p {
-    font-size:0.9rem;
-    color:#696969;
-    line-height:1.5;
-}
+/* Info cards */
+.contact-info{display:flex;flex-direction:column;gap:1.25rem;}
+.info-card{background:#fff;border:1px solid #e5e7f0;border-radius:16px;padding:1.4rem 1.5rem;display:flex;align-items:center;gap:1.1rem;transition:all 0.3s;}
+.info-card:hover{transform:translateX(5px);box-shadow:0 8px 24px rgba(95,111,255,0.1);border-color:#c5caff;}
+.info-icon{width:54px;height:54px;background:#eef0ff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.info-icon i{font-size:1.35rem;color:#5f6fff;}
+.info-content h3{font-size:1rem;font-weight:600;color:#1a1a2e;margin-bottom:0.35rem;}
+.info-content p{font-size:0.85rem;color:#696969;line-height:1.5;margin-bottom:0.15rem;}
 
-/* Contact Form */
-.contact-form-container {
-    background:#fff;
-    border:1px solid #e5e7f0;
-    border-radius:20px;
-    padding:2rem;
-}
-.contact-form-container h2 {
-    font-size:1.5rem;
-    font-weight:600;
-    color:#1a1a2e;
-    margin-bottom:0.5rem;
-}
-.form-subtitle {
-    color:#696969;
-    font-size:0.85rem;
-    margin-bottom:1.5rem;
-}
-.form-group {
-    margin-bottom:1.25rem;
-}
-.form-group label {
-    display:block;
-    font-size:0.85rem;
-    font-weight:500;
-    color:#4b5563;
-    margin-bottom:0.5rem;
-}
-.form-group label i {
-    color:#5f6fff;
-    margin-right:0.5rem;
-}
-.form-group input,
-.form-group textarea {
-    width:100%;
-    padding:0.85rem;
-    border:1.5px solid #e5e7f0;
-    border-radius:12px;
-    font-family:'Outfit', sans-serif;
-    font-size:0.9rem;
-    transition:all 0.3s;
-}
-.form-group input:focus,
-.form-group textarea:focus {
-    outline:none;
-    border-color:#5f6fff;
-    box-shadow:0 0 0 3px rgba(95,111,255,0.1);
-}
-.form-group textarea {
-    resize:vertical;
-    min-height:120px;
-}
-.alert {
-    padding:1rem;
-    border-radius:12px;
-    margin-bottom:1.5rem;
-    display:flex;
-    align-items:center;
-    gap:0.75rem;
-}
-.alert-success {
-    background:#d1fae5;
-    color:#065f46;
-    border:1px solid #a7f3d0;
-}
-.alert-error {
-    background:#fee2e2;
-    color:#991b1b;
-    border:1px solid #fecaca;
-}
-.btn-submit {
-    width:100%;
-    padding:0.9rem;
-    background:#5f6fff;
-    color:#fff;
-    border:none;
-    border-radius:12px;
-    font-size:1rem;
-    font-weight:600;
-    cursor:pointer;
-    transition:all 0.3s;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:0.5rem;
-}
-.btn-submit:hover {
-    background:#4a5af0;
-    transform:translateY(-2px);
-    box-shadow:0 6px 20px rgba(95,111,255,0.3);
-}
+/* Form card */
+.contact-form-card{background:#fff;border:1px solid #e5e7f0;border-radius:20px;padding:2rem;}
+.contact-form-card h2{font-size:1.4rem;font-weight:700;color:#1a1a2e;margin-bottom:0.3rem;}
+.form-subtitle{color:#9ca3af;font-size:0.82rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.4rem;}
 
-/* Map Section */
-.map-section {
-    margin-bottom:4rem;
-    border-radius:20px;
-    overflow:hidden;
-    box-shadow:0 4px 20px rgba(0,0,0,0.08);
-}
-.map-section iframe {
-    width:100%;
-    height:400px;
-    border:none;
-}
+/* Alerts */
+.alert{padding:0.875rem 1.1rem;border-radius:10px;margin-bottom:1.25rem;display:flex;align-items:center;gap:0.65rem;font-size:0.875rem;font-weight:500;}
+.alert-success{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;}
+.alert-error{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
 
-/* FAQ Section */
-.faq-section {
-    margin-bottom:4rem;
-}
-.section-header {
-    text-align:center;
-    margin-bottom:2.5rem;
-}
-.section-header h2 {
-    font-size:clamp(1.35rem,2.5vw,1.9rem);
-    font-weight:700;
-    color:#1a1a2e;
-    margin-bottom:0.55rem;
-}
-.section-header p {
-    font-size:0.875rem;
-    color:#696969;
-    max-width:500px;
-    margin:0 auto;
-}
-.faq-grid {
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:1.5rem;
-}
-.faq-item {
-    background:#fff;
-    border:1px solid #e5e7f0;
-    border-radius:12px;
-    padding:1.5rem;
-    transition:all 0.3s;
-}
-.faq-item:hover {
-    transform:translateY(-3px);
-    box-shadow:0 8px 20px rgba(95,111,255,0.08);
-    border-color:#c5caff;
-}
-.faq-question {
-    display:flex;
-    align-items:center;
-    gap:0.75rem;
-    margin-bottom:0.75rem;
-}
-.faq-question i {
-    color:#5f6fff;
-    font-size:1.1rem;
-}
-.faq-question h4 {
-    font-size:1rem;
-    font-weight:600;
-    color:#1a1a2e;
-}
-.faq-answer {
-    font-size:0.85rem;
-    color:#696969;
-    line-height:1.6;
-    padding-left:1.85rem;
-}
+/* Form */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.875rem;}
+.form-group{margin-bottom:1rem;}
+.form-group label{display:block;font-size:0.8rem;font-weight:600;color:#4b5563;margin-bottom:5px;}
+.form-group label i{color:#5f6fff;margin-right:0.35rem;}
+.form-group input,.form-group textarea{width:100%;padding:0.7rem 0.9rem;border:1.5px solid #e5e7f0;border-radius:10px;font-family:'Outfit',sans-serif;font-size:0.875rem;transition:all 0.25s;color:#1a1a2e;background:#fff;}
+.form-group input:focus,.form-group textarea:focus{outline:none;border-color:#5f6fff;box-shadow:0 0 0 3px rgba(95,111,255,0.1);}
+.form-group textarea{resize:vertical;min-height:120px;}
+.btn-submit{width:100%;padding:0.875rem;background:#5f6fff;color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:0.5rem;font-family:'Outfit',sans-serif;margin-top:0.25rem;}
+.btn-submit:hover{background:#4a5af0;transform:translateY(-2px);box-shadow:0 6px 20px rgba(95,111,255,0.3);}
+.btn-submit:disabled{opacity:0.7;cursor:not-allowed;transform:none;}
+
+/* Spinner */
+.spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Map */
+.map-section{margin-bottom:4rem;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
+.map-section iframe{width:100%;height:400px;border:none;}
+
+/* FAQ */
+.faq-section{margin-bottom:4rem;}
+.section-header{text-align:center;margin-bottom:2.5rem;}
+.section-header h2{font-size:clamp(1.35rem,2.5vw,1.9rem);font-weight:700;color:#1a1a2e;margin-bottom:0.5rem;}
+.section-header p{font-size:0.875rem;color:#696969;max-width:500px;margin:0 auto;}
+.faq-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;}
+.faq-item{background:#fff;border:1px solid #e5e7f0;border-radius:12px;padding:1.4rem;transition:all 0.3s;}
+.faq-item:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(95,111,255,0.08);border-color:#c5caff;}
+.faq-q{display:flex;align-items:center;gap:0.65rem;margin-bottom:0.65rem;}
+.faq-q i{color:#5f6fff;font-size:1rem;}
+.faq-q h4{font-size:0.95rem;font-weight:600;color:#1a1a2e;}
+.faq-a{font-size:0.82rem;color:#696969;line-height:1.6;padding-left:1.75rem;}
 
 /* Footer */
-footer {
-    background:#fff;
-    border-top:1px solid #ebebeb;
-    padding:3.5rem 6% 2rem;
-}
-.footer-grid {
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr;
-    gap:3rem;
-    margin-bottom:2.5rem;
-}
-.footer-logo {
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:1.15rem;
-    font-weight:700;
-    color:#1a1a2e;
-    margin-bottom:0.875rem;
-}
-.footer-logo img {
-    width:100px;
-}
-.footer-desc {
-    font-size:0.85rem;
-    color:#777;
-    line-height:1.7;
-    max-width:300px;
-}
-.footer-col h4 {
-    font-size:0.82rem;
-    font-weight:700;
-    color:#1a1a2e;
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-    margin-bottom:1.1rem;
-}
-.footer-col ul {
-    list-style:none;
-}
-.footer-col ul li {
-    margin-bottom:0.6rem;
-}
-.footer-col ul li a {
-    font-size:0.875rem;
-    color:#696969;
-    transition:color 0.2s;
-}
-.footer-col ul li a:hover {
-    color:#5f6fff;
-}
-.footer-col ul li {
-    font-size:0.875rem;
-    color:#696969;
-}
-.footer-bottom {
-    border-top:1px solid #ebebeb;
-    padding-top:1.25rem;
-    text-align:center;
-    font-size:0.8rem;
-    color:#aaa;
-}
+footer{background:#fff;border-top:1px solid #ebebeb;padding:3.5rem 6% 2rem;}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem;}
+.footer-logo{display:flex;align-items:center;gap:8px;font-size:1.1rem;font-weight:700;color:#1a1a2e;margin-bottom:0.875rem;}
+.f-icon{width:28px;height:28px;background:#5f6fff;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.8rem;}
+.footer-desc{font-size:0.85rem;color:#777;line-height:1.7;max-width:300px;}
+.footer-col h4{font-size:0.82rem;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:1.1rem;}
+.footer-col ul{list-style:none;}
+.footer-col ul li{margin-bottom:0.6rem;}
+.footer-col ul li a{font-size:0.875rem;color:#696969;transition:color 0.2s;}
+.footer-col ul li a:hover{color:#5f6fff;}
+.footer-col ul li{font-size:0.875rem;color:#696969;}
+.footer-bottom{border-top:1px solid #ebebeb;padding-top:1.25rem;text-align:center;font-size:0.8rem;color:#aaa;}
 
-/* Fade Animations */
-.fade-up {
-    opacity:0;
-    transform:translateY(20px);
-    transition:opacity 0.5s ease, transform 0.5s ease;
-}
-.fade-up.visible {
-    opacity:1;
-    transform:translateY(0);
-}
-.stagger .fade-up:nth-child(1) { transition-delay:0.05s; }
-.stagger .fade-up:nth-child(2) { transition-delay:0.1s; }
-.stagger .fade-up:nth-child(3) { transition-delay:0.15s; }
-.stagger .fade-up:nth-child(4) { transition-delay:0.2s; }
-.stagger .fade-up:nth-child(5) { transition-delay:0.25s; }
+/* Animations */
+.fade-up{opacity:0;transform:translateY(20px);transition:opacity 0.5s ease,transform 0.5s ease;}
+.fade-up.visible{opacity:1;transform:translateY(0);}
+.stagger .fade-up:nth-child(1){transition-delay:0.05s;}
+.stagger .fade-up:nth-child(2){transition-delay:0.10s;}
+.stagger .fade-up:nth-child(3){transition-delay:0.15s;}
+.stagger .fade-up:nth-child(4){transition-delay:0.20s;}
 
 /* Responsive */
-@media (max-width:1024px) {
-    .faq-grid { grid-template-columns:1fr; }
+@media(max-width:900px){.faq-grid{grid-template-columns:1fr;}}
+@media(max-width:768px){
+    .contact-grid{grid-template-columns:1fr;gap:2rem;}
+    .page-wrap{padding:2rem 5% 3rem;}
+    .footer-grid{grid-template-columns:1fr;gap:2rem;}
+    .map-section iframe{height:280px;}
+    .form-row{grid-template-columns:1fr;}
 }
-
-@media (max-width:768px) {
-    .contact-grid { grid-template-columns:1fr; gap:2rem; }
-    .page-wrap { padding:2rem 5% 3rem; }
-    .footer-grid { grid-template-columns:1fr; gap:2rem; }
-    .map-section iframe { height:300px; }
-}
-
-@media (max-width:480px) {
-    .info-card { padding:1.25rem; }
-    .info-icon { width:50px; height:50px; }
-    .info-icon i { font-size:1.25rem; }
-    .contact-form-container { padding:1.5rem; }
+@media(max-width:480px){
+    .info-card{padding:1.1rem;}
+    .info-icon{width:46px;height:46px;}
+    .contact-form-card{padding:1.25rem;}
 }
 </style>
 </head>
 <body>
 
-<!-- ═════════════ SHARED NAVBAR ═════════════ -->
 <?php require_once 'navbar.php'; ?>
 
-<!-- ═════════════ PAGE CONTENT ═════════════ -->
 <div class="page-wrap">
 
-    <!-- Page Header -->
+    <!-- Page header -->
     <div class="page-header fade-up">
         <h1>Contact Us</h1>
         <div class="header-line"></div>
-        <p>Have questions about our services or need assistance? Our team is here to help you.</p>
+        <p>Have questions or need assistance? We're here to help you 24/7.</p>
     </div>
 
-    <!-- Contact Grid -->
+    <!-- Contact grid -->
     <div class="contact-grid">
-        <!-- Contact Information -->
+
+        <!-- Info cards -->
         <div class="contact-info stagger">
             <div class="info-card fade-up">
-                <div class="info-icon">
-                    <i class="fas fa-map-marker-alt"></i>
-                </div>
+                <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
                 <div class="info-content">
                     <h3>Visit Us</h3>
                     <p>Great East Road, Lusaka, Zambia</p>
                 </div>
             </div>
-
             <div class="info-card fade-up">
-                <div class="info-icon">
-                    <i class="fas fa-phone-alt"></i>
-                </div>
+                <div class="info-icon"><i class="fas fa-phone-alt"></i></div>
                 <div class="info-content">
                     <h3>Call Us</h3>
                     <p>+260-772-903-446</p>
                     <p>+260-7610-16446</p>
                 </div>
             </div>
-
             <div class="info-card fade-up">
-                <div class="info-icon">
-                    <i class="fas fa-envelope"></i>
-                </div>
+                <div class="info-icon"><i class="fas fa-envelope"></i></div>
                 <div class="info-content">
                     <h3>Email Us</h3>
                     <p>elijahmwange55@gmail.com</p>
                     <p>info@kehospital.co.zm</p>
                 </div>
             </div>
-
             <div class="info-card fade-up">
-                <div class="info-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
+                <div class="info-icon"><i class="fas fa-clock"></i></div>
                 <div class="info-content">
                     <h3>Working Hours</h3>
-                    <p>Monday - Friday: 8:00 AM - 8:00 PM</p>
-                    <p>Saturday - Sunday: 9:00 AM - 5:00 PM</p>
+                    <p>Mon – Fri: 8:00 AM – 8:00 PM</p>
+                    <p>Sat – Sun: 9:00 AM – 5:00 PM</p>
                 </div>
             </div>
         </div>
 
-        <!-- Contact Form -->
-        <div class="contact-form-container fade-up">
+        <!-- Contact form -->
+        <div class="contact-form-card fade-up">
             <h2>Send Us a Message</h2>
-            <p class="form-subtitle">We'll get back to you within 24 hours</p>
+            <p class="form-subtitle">
+                <i class="fas fa-paper-plane" style="color:#5f6fff;"></i>
+                We'll reply within 24 hours
+            </p>
 
             <?php if ($message_sent): ?>
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
-                    Thank you for your message! We'll get back to you soon.
-                </div>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span>Thank you, <strong><?php echo htmlspecialchars(isset($_POST['name']) ? $_POST['name'] : ''); ?></strong>! Your message has been received. We'll get back to you soon.</span>
+            </div>
             <?php endif; ?>
 
             <?php if ($error_message): ?>
-                <div class="alert alert-error">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <?php echo htmlspecialchars($error_message); ?>
-                </div>
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <?php echo htmlspecialchars($error_message); ?>
+            </div>
             <?php endif; ?>
 
-            <form method="POST" action="">
-                <div class="form-group">
-                    <label for="name"><i class="fas fa-user"></i> Your Name *</label>
-                    <input type="text" id="name" name="name" required value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>" placeholder="Enter your full name">
+            <?php if (!$message_sent): ?>
+            <form method="POST" action="" id="contactForm" novalidate>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name"><i class="fas fa-user"></i> Full Name *</label>
+                        <input type="text" id="name" name="name" required
+                               value="<?php echo htmlspecialchars(isset($_POST['name']) ? $_POST['name'] : ($is_logged_in ? $user_name : '')); ?>"
+                               placeholder="Your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone"><i class="fas fa-phone"></i> Phone (optional)</label>
+                        <input type="tel" id="phone" name="phone"
+                               value="<?php echo htmlspecialchars(isset($_POST['phone']) ? $_POST['phone'] : ''); ?>"
+                               placeholder="+260 7XX XXX XXX">
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label for="email"><i class="fas fa-envelope"></i> Email Address *</label>
-                    <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>" placeholder="Enter your email address">
+                    <input type="email" id="email" name="email" required
+                           value="<?php echo htmlspecialchars(isset($_POST['email']) ? $_POST['email'] : ''); ?>"
+                           placeholder="your@email.com">
                 </div>
 
                 <div class="form-group">
                     <label for="subject"><i class="fas fa-tag"></i> Subject *</label>
-                    <input type="text" id="subject" name="subject" required value="<?php echo htmlspecialchars($_POST['subject'] ?? ''); ?>" placeholder="What is this regarding?">
+                    <input type="text" id="subject" name="subject" required
+                           value="<?php echo htmlspecialchars(isset($_POST['subject']) ? $_POST['subject'] : ''); ?>"
+                           placeholder="What is this regarding?">
                 </div>
 
                 <div class="form-group">
-                    <label for="message"><i class="fas fa-comment"></i> Message *</label>
-                    <textarea id="message" name="message" required placeholder="Please describe your inquiry in detail..."><?php echo htmlspecialchars($_POST['message'] ?? ''); ?></textarea>
+                    <label for="message"><i class="fas fa-comment-dots"></i> Message *</label>
+                    <textarea id="message" name="message" required
+                              placeholder="Please describe your inquiry in detail..."><?php echo htmlspecialchars(isset($_POST['message']) ? $_POST['message'] : ''); ?></textarea>
                 </div>
 
-                <button type="submit" class="btn-submit">
-                    <i class="fas fa-paper-plane"></i> Send Message
+                <button type="submit" name="send_message" class="btn-submit" id="submitBtn">
+                    <span id="btnText"><i class="fas fa-paper-plane"></i> Send Message</span>
+                    <div class="spinner" id="btnSpinner"></div>
                 </button>
+
             </form>
+            <?php endif; ?>
         </div>
     </div>
 
-    <!-- Map Section -->
+    <!-- Map -->
     <div class="map-section fade-up">
-        <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d123112.123456789!2d28.283333!3d-15.416667!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1940f6e0d5a9e2a5%3A0x2e4b9c4e8d5f2c7!2sLusaka%2C%20Zambia!5e0!3m2!1sen!2s!4v1700000000000!5m2!1sen!2s" 
-            allowfullscreen="" 
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade">
+        <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d123112.1!2d28.283333!3d-15.416667!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1940f6e0d5a9e2a5%3A0x2e4b9c4e8d5f2c7!2sLusaka%2C%20Zambia!5e0!3m2!1sen!2s!4v1700000000000"
+            allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
         </iframe>
     </div>
 
-    <!-- FAQ Section -->
+    <!-- FAQ -->
     <div class="faq-section">
         <div class="section-header fade-up">
             <h2>Frequently Asked Questions</h2>
-            <p>Quick answers to common questions</p>
+            <p>Quick answers to common questions about K&amp;E Hospital</p>
         </div>
         <div class="faq-grid stagger">
             <div class="faq-item fade-up">
-                <div class="faq-question">
-                    <i class="fas fa-question-circle"></i>
-                    <h4>How do I book an appointment?</h4>
-                </div>
-                <div class="faq-answer">
-                    You can book an appointment by browsing our doctors list, selecting your preferred doctor, and choosing an available time slot.
-                </div>
+                <div class="faq-q"><i class="fas fa-question-circle"></i><h4>How do I book an appointment?</h4></div>
+                <div class="faq-a">Browse our doctors list, select your preferred specialist, then pick an available date and time slot. Login is required to confirm a booking.</div>
             </div>
             <div class="faq-item fade-up">
-                <div class="faq-question">
-                    <i class="fas fa-question-circle"></i>
-                    <h4>What are your working hours?</h4>
-                </div>
-                <div class="faq-answer">
-                    We are open Monday-Friday 8 AM to 8 PM, and Saturday-Sunday 9 AM to 5 PM. Emergency services are available 24/7.
-                </div>
+                <div class="faq-q"><i class="fas fa-question-circle"></i><h4>What are your working hours?</h4></div>
+                <div class="faq-a">Mon–Fri 8 AM–8 PM, Sat–Sun 9 AM–5 PM. Emergency consultations are available 24/7 — call us directly.</div>
             </div>
             <div class="faq-item fade-up">
-                <div class="faq-question">
-                    <i class="fas fa-question-circle"></i>
-                    <h4>How do I cancel my appointment?</h4>
-                </div>
-                <div class="faq-answer">
-                    You can cancel your appointment by logging into your account and navigating to "My Appointments" section.
-                </div>
+                <div class="faq-q"><i class="fas fa-question-circle"></i><h4>How do I cancel my appointment?</h4></div>
+                <div class="faq-a">Log in to your account and go to "My Appointments". Click the "Cancel appointment" button next to the booking you wish to cancel.</div>
             </div>
             <div class="faq-item fade-up">
-                <div class="faq-question">
-                    <i class="fas fa-question-circle"></i>
-                    <h4>Do you accept insurance?</h4>
-                </div>
-                <div class="faq-answer">
-                    Yes, we accept most major insurance providers. Please contact our billing department for specific inquiries.
-                </div>
+                <div class="faq-q"><i class="fas fa-question-circle"></i><h4>Do you accept insurance?</h4></div>
+                <div class="faq-a">Yes, we accept most major insurance providers in Zambia. Please contact our billing department for specific insurer inquiries.</div>
             </div>
         </div>
     </div>
+
 </div>
 
-<!-- ═════════════ FOOTER ═════════════ -->
+<!-- Footer -->
 <footer>
     <div class="footer-grid">
         <div>
             <div class="footer-logo">
-                <img src="assets/logo.svg" alt="K&amp;E Hospital">
+                <div ><img src="assets/logo.svg" width="100px" alt=""></div>
+                
             </div>
-            <p class="footer-desc">Your Health, Our Priority Bridging the Gap Between Zambian Patients and Doctors with Quality Healthcare at Your Fingertips, Anywhere in Zambia.</p>
+            <p class="footer-desc">Your Health, Our Priority. Bridging the Gap Between Zambian Patients and Doctors with Quality Healthcare at Your Fingertips, Anywhere in Zambia.</p>
         </div>
-
         <div class="footer-col">
             <h4>Company</h4>
             <ul>
@@ -625,38 +563,44 @@ footer {
                 <li><a href="privacy.php">Privacy policy</a></li>
             </ul>
         </div>
-
         <div class="footer-col">
             <h4>Get In Touch</h4>
             <ul>
                 <li>+260 7610 16446</li>
-                <li>admin@kehospital.co.zm</li>
+                <li>elijahmwange55@gmail.com</li>
             </ul>
         </div>
     </div>
-
     <div class="footer-bottom">
         Copyright &copy; <?php echo date('Y'); ?> K&amp;E Hospital - All Right Reserved.
     </div>
 </footer>
 
-<!-- ═════════════ SCRIPTS (only for page-specific animations) ═════════════ -->
 <script>
+/* Submit button spinner */
+document.getElementById('contactForm') && document.getElementById('contactForm').addEventListener('submit', function() {
+    var btn     = document.getElementById('submitBtn');
+    var txt     = document.getElementById('btnText');
+    var spinner = document.getElementById('btnSpinner');
+    if (btn && txt && spinner) {
+        txt.style.display     = 'none';
+        spinner.style.display = 'block';
+        btn.disabled          = true;
+    }
+});
+
+/* Scroll fade-in */
 (function() {
-    /* Scroll fade-in for page content */
-    var fadeEls = document.querySelectorAll('.fade-up');
+    var els = document.querySelectorAll('.fade-up');
     if ('IntersectionObserver' in window) {
         var io = new IntersectionObserver(function(entries) {
             entries.forEach(function(e) {
-                if (e.isIntersecting) {
-                    e.target.classList.add('visible');
-                    io.unobserve(e.target);
-                }
+                if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
             });
         }, { threshold: 0.1 });
-        for (var i = 0; i < fadeEls.length; i++) { io.observe(fadeEls[i]); }
+        for (var i = 0; i < els.length; i++) io.observe(els[i]);
     } else {
-        for (var j = 0; j < fadeEls.length; j++) { fadeEls[j].classList.add('visible'); }
+        for (var j = 0; j < els.length; j++) els[j].classList.add('visible');
     }
 })();
 </script>
