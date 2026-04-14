@@ -197,7 +197,7 @@ if (strpos($doc_img, '/') === 0) $doc_img = ltrim($doc_img, '/');
     <div class="alert alert-success">
         <i class="fas fa-check-circle"></i>
         <?php echo htmlspecialchars($success_message); ?>
-        <a href="Myappointments.php" style="margin-left:auto;color:#065f46;font-weight:600;text-decoration:underline;">View Appointments</a>
+        <a href="Myappointment.php" style="margin-left:auto;color:#065f46;font-weight:600;text-decoration:underline;">View Appointments</a>
     </div>
     <?php endif; ?>
     <?php if ($error_message): ?>
