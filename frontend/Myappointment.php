@@ -186,16 +186,12 @@ function fmtTime($t) {
             /* Fee */
             $fee = ($apt['amount'] > 0) ? $apt['amount'] : $apt['fees'];
 
-            /* ── Tracker step states ──
-             * Steps: Booked → Confirmed → Completed
-             * If Cancelled: show cancelled state on whichever step was active
-             */
-            $s_booked    = 'done'; /* always done once appointment exists */
+            /* ── Tracker step states ── */
+            $s_booked    = 'done';
             $s_confirmed = 'upcoming';
             $s_completed = 'upcoming';
             $s_line1     = '';
             $s_line2     = '';
-            $cancelled_at = '';
 
             if ($status === 'Pending') {
                 $s_booked    = 'done';
@@ -325,9 +321,9 @@ function fmtTime($t) {
                 <?php else: ?>
                     <!-- Pending or Confirmed -->
                     <?php if ($pay_status === 'Pending'): ?>
-                    <a href="payment.php?appointment=<?php echo $apt['appointment_id']; ?>" class="btn-pay">
+                    <button type="button" class="btn-pay" onclick="showPaymentUnavailableModal('<?php echo addslashes($apt['doctor_name']); ?>')">
                         <i class="fas fa-credit-card"></i> Pay here
-                    </a>
+                    </button>
                     <?php endif; ?>
 
                     <form method="POST" action="" onsubmit="return doCancel(event, <?php echo $apt['appointment_id']; ?>)">
@@ -367,14 +363,30 @@ function fmtTime($t) {
     </div>
 </div>
 
+<!-- Replace the payment modal div with this: -->
+<div class="modal-backdrop" id="paymentInfoModal">
+    <div class="modal-box">
+        <div class="modal-icon payment-modal-icon"><i class="fas fa-credit-card"></i></div>
+        <h3>Online Payment Unavailable</h3>
+        <p>Online payment services are currently unavailable. Please contact the doctor directly to arrange payment.</p>
+        <div class="contact-note">
+            <i class="fas fa-stethoscope"></i> <strong>Doctor:</strong> <span id="modalDoctorName">-</span><br>
+            <i class="fas fa-phone-alt"></i> <strong>Contact:</strong> +260 7610 16446
+        </div>
+        <div class="modal-actions">
+            <button class="btn-modal-keep" style="background-color:#5f6fff; color:white;" onclick="closePaymentModal()">Got it, I'll contact</button>
+        </div>
+    </div>
+</div>
+
 
 <!-- Footer -->
 <footer>
     <div class="footer-grid">
         <div>
             <div class="footer-logo">
-                <div class="f-icon"><i class="fas fa-hospital-user"></i></div>
-                K&amp;E Hospital
+                <div ><img src="./assets/logo.svg" width="100px" alt=""></div>
+                
             </div>
             <p class="footer-desc">Your Health, Our Priority. Bridging the Gap Between Zambian Patients and Doctors with Quality Healthcare at Your Fingertips.</p>
         </div>
@@ -432,6 +444,28 @@ document.getElementById('cancelModal').addEventListener('click', function(e) {
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeModal();
+});
+
+/* ── Payment Unavailable Modal ── */
+function showPaymentUnavailableModal(doctorName) {
+    document.getElementById('modalDoctorName').textContent = doctorName;
+    document.getElementById('paymentInfoModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentInfoModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('paymentInfoModal').addEventListener('click', function(e) {
+    if (e.target === this) closePaymentModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('paymentInfoModal').classList.contains('active')) {
+        closePaymentModal();
+    }
 });
 
 /* ── Tab filter ── */

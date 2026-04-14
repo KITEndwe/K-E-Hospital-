@@ -50,7 +50,6 @@ img {
     color: #1a1a2e;
 }
 
-/* Live update notice */
 .live-notice {
     display: inline-flex;
     align-items: center;
@@ -72,18 +71,10 @@ img {
 }
 
 @keyframes blink {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.3;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
 }
 
-/* Tabs */
 .tabs {
     display: flex;
     gap: 0.5rem;
@@ -115,7 +106,6 @@ img {
     color: #fff;
 }
 
-/* Alerts */
 .alert {
     padding: 0.875rem 1.1rem;
     border-radius: 10px;
@@ -139,7 +129,6 @@ img {
     border: 1px solid #fecaca;
 }
 
-/* Appointment cards */
 .apt-list {
     display: flex;
     flex-direction: column;
@@ -161,7 +150,6 @@ img {
     display: none;
 }
 
-/* Doctor photo */
 .apt-photo {
     width: 110px;
     height: 120px;
@@ -192,7 +180,6 @@ img {
     color: #8b9aff;
 }
 
-/* Info */
 .apt-info {
     flex: 1;
     min-width: 0;
@@ -232,7 +219,6 @@ img {
     margin-top: 0.25rem;
 }
 
-/* ── STATUS TRACKER ── */
 .status-tracker {
     display: flex;
     align-items: center;
@@ -283,7 +269,6 @@ img {
     min-width: 12px;
 }
 
-/* Active / done states */
 .tracker-step.done .tracker-icon {
     background: #d1fae5;
     color: #065f46;
@@ -324,7 +309,6 @@ img {
     background: linear-gradient(to right, #a7f3d0, #e0e2f0);
 }
 
-/* Payment confirmed notice */
 .payment-notice {
     display: inline-flex;
     align-items: center;
@@ -342,7 +326,6 @@ img {
     font-size: 0.72rem;
 }
 
-/* Actions */
 .apt-actions {
     display: flex;
     flex-direction: column;
@@ -411,7 +394,6 @@ img {
     background: #fff5f5;
 }
 
-/* Status badge pill */
 .status-pill {
     display: inline-flex;
     align-items: center;
@@ -442,7 +424,6 @@ img {
     color: #991b1b;
 }
 
-/* Empty */
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
@@ -482,7 +463,6 @@ img {
     transform: translateY(-2px);
 }
 
-/* Cancel confirm modal */
 .modal-backdrop {
     display: none;
     position: fixed;
@@ -514,7 +494,6 @@ img {
         opacity: 0;
         transform: scale(0.92) translateY(10px);
     }
-
     to {
         opacity: 1;
         transform: scale(1) translateY(0);
@@ -586,7 +565,6 @@ img {
     background: #dc2626;
 }
 
-/* Footer */
 footer {
     background: #fff;
     border-top: 1px solid #ebebeb;
@@ -674,37 +652,29 @@ footer {
     margin: 0 auto;
 }
 
-/* Responsive */
 @media (max-width: 700px) {
     .apt-card {
         flex-direction: column;
         gap: 0.875rem;
     }
-
     .apt-photo {
         width: 100%;
         height: 170px;
     }
-
     .apt-actions {
         flex-direction: row;
         flex-wrap: wrap;
         align-items: center;
         width: 100%;
     }
-
-    .btn-pay,
-    .btn-paid,
-    .btn-cancel {
+    .btn-pay, .btn-paid, .btn-cancel {
         min-width: auto;
         flex: 1;
     }
-
     .footer-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-
     .status-tracker {
         gap: 0;
     }
@@ -714,12 +684,108 @@ footer {
     .page-wrap {
         padding: 1.75rem 5% 3rem;
     }
-
     .apt-photo {
         height: 140px;
     }
-
     .tracker-label {
         font-size: 0.58rem;
     }
+}
+
+/* --- NEW STYLE FOR PAYMENT INFO MODAL (same design language, no design change) --- */
+.payment-modal-icon {
+    background: #ffedd5;
+    color: #b45309;
+}
+.payment-modal-icon i {
+    font-size: 1.8rem;
+}
+.contact-note {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 0.9rem;
+    margin: 0.75rem 0 0.5rem;
+    font-size: 0.8rem;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+.contact-note i {
+    color: #5f6fff;
+    margin-right: 6px;
+}
+.btn-dismiss {
+    background: #5f6fff;
+    border: none;
+    padding: 0.65rem 1.5rem;
+    border-radius: 50px;
+    color: white;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-dismiss:hover {
+    background: #4a5af0;
+}
+
+.payment-modal-icon {
+    background: #ffedd5;
+    color: #b45309;
+}
+
+.payment-modal-icon i {
+    font-size: 1.8rem;
+}
+
+.contact-note {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 0.9rem;
+    margin: 0.75rem 0 0.5rem;
+    font-size: 0.8rem;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+
+.contact-note i {
+    color: #5f6fff;
+    margin-right: 6px;
+}
+
+/* IMPORTANT: Specific button style for dismiss button */
+.btn-dismiss {
+    background: #5f6fff !important;
+    border: none !important;
+    padding: 0.65rem 1.5rem !important;
+    border-radius: 50px !important;
+    color: white !important;
+    font-weight: 600 !important;
+    font-family: 'Outfit', sans-serif !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    display: inline-block !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    font-size: 0.875rem !important;
+}
+
+.btn-dismiss:hover {
+    background: #4a5af0 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Ensure modal buttons aren't affected by other styles */
+.modal-box button {
+    margin: 0;
+}
+
+/* Override any conflicting button styles */
+.modal-actions .btn-dismiss {
+    background: #5f6fff;
+    border: none;
+    color: white;
+}
+
+.modal-actions .btn-dismiss:hover {
+    background: #4a5af0;
 }
