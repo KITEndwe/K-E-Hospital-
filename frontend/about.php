@@ -189,7 +189,7 @@ $profile_image = isset($_SESSION['profile_image']) ? $_SESSION['profile_image'] 
             </div>
             <div class="team-card fade-up">
                 <div class="team-image">
-                    <img src="./assets/juannita.jpeg" alt="Dr. Joannita Kabemba"
+                    <img src="./assets/juannita.jpeg" alt="Dr. Juannita Kabemba"
                          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                     <div class="team-fallback"><i class="fas fa-user-doctor"></i></div>
                 </div>
