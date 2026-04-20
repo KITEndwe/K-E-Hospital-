@@ -55,12 +55,12 @@ foreach ($doctors as $k => $doc) {
 
 /* Speciality list */
 $spec_list = array(
-    array('label'=>'General physician', 'icon'=>'assets/speciality/General_physician.png',  'emoji'=>'&#x1F9BA;'),
-    array('label'=>'Gynecologist',      'icon'=>'assets/speciality/Gynecologist.png',        'emoji'=>'&#x1F469;&#x200D;&#x2695;&#xFE0F;'),
-    array('label'=>'Dermatologist',     'icon'=>'assets/speciality/Dermatologist.png',       'emoji'=>'&#x1F9F4;'),
-    array('label'=>'Pediatricians',     'icon'=>'assets/speciality/Pediatricians.png',       'emoji'=>'&#x1F476;'),
-    array('label'=>'Neurologist',       'icon'=>'assets/speciality/Neurologist.png',         'emoji'=>'&#x1F9E0;'),
-    array('label'=>'Gastroenterologist','icon'=>'assets/speciality/Gastroenterologist.png',  'emoji'=>'&#x1FAC1;'),
+    array('label'=>'General physician', 'icon'=>'./assets/general_physician.svg',  'emoji'=>'&#x1F9BA;'),
+    array('label'=>'Gynecologist',      'icon'=>'assets/Gynecologist.svg',        'emoji'=>'&#x1F469;&#x200D;&#x2695;&#xFE0F;'),
+    array('label'=>'Dermatologist',     'icon'=>'assets/Dermatologist.svg',       'emoji'=>'&#x1F9F4;'),
+    array('label'=>'Pediatricians',     'icon'=>'assets/Pediatricians.svg',       'emoji'=>'&#x1F476;'),
+    array('label'=>'Neurologist',       'icon'=>'assets/Neurologist.svg',         'emoji'=>'&#x1F9E0;'),
+    array('label'=>'Gastroenterologist','icon'=>'assets/Gastroenterologist.svg',  'emoji'=>'&#x1FAC1;'),
 );
 
 $is_logged_in  = isset($_SESSION['user_id']);
