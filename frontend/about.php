@@ -193,7 +193,7 @@ $profile_image = isset($_SESSION['profile_image']) ? $_SESSION['profile_image'] 
                          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                     <div class="team-fallback"><i class="fas fa-user-doctor"></i></div>
                 </div>
-                <div class="team-info"><h4>Dr. Joannita Kabemba</h4><p>Head of Nursing</p></div>
+                <div class="team-info"><h4>Dr. Juannita Kabemba</h4><p>Head of Nursing</p></div>
             </div>
         </div>
     </div>

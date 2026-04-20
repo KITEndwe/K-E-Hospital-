@@ -299,7 +299,7 @@ if ($is_logged_in && empty($profile_image)) {
                 <div class="info-content">
                     <h3>Call Us</h3>
                     <p>+260-772-903-446</p>
-                    <p>+260-7610-16446</p>
+                    <p>+260-977-104-196</p>
                 </div>
             </div>
             <div class="info-card fade-up">
@@ -307,7 +307,7 @@ if ($is_logged_in && empty($profile_image)) {
                 <div class="info-content">
                     <h3>Email Us</h3>
                     <p>elijahmwange55@gmail.com</p>
-                    <p>info@kehospital.co.zm</p>
+                    <p>kalengamuma316@gmail.com</p>
                 </div>
             </div>
             <div class="info-card fade-up">
