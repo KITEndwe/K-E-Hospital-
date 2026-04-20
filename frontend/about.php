@@ -173,7 +173,7 @@ $profile_image = isset($_SESSION['profile_image']) ? $_SESSION['profile_image'] 
         <div class="team-grid stagger">
             <div class="team-card fade-up">
                 <div class="team-image">
-                    <img src="assets/doc3.png" alt="Dr. Elijah Mwange"
+                    <img src="./assets/Elijah.jpg" alt="Dr. Elijah Mwange"
                          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                     <div class="team-fallback"><i class="fas fa-user-doctor"></i></div>
                 </div>
@@ -181,7 +181,7 @@ $profile_image = isset($_SESSION['profile_image']) ? $_SESSION['profile_image'] 
             </div>
             <div class="team-card fade-up">
                 <div class="team-image">
-                    <img src="assets/doc1.png" alt="Dr. Kelenga Muma"
+                    <img src="./assets/Kalenga.jpeg" alt="Dr. Kelenga Muma"
                          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                     <div class="team-fallback"><i class="fas fa-user-doctor"></i></div>
                 </div>
@@ -189,7 +189,7 @@ $profile_image = isset($_SESSION['profile_image']) ? $_SESSION['profile_image'] 
             </div>
             <div class="team-card fade-up">
                 <div class="team-image">
-                    <img src="assets/doc13.png" alt="Dr. Joannita Kabemba"
+                    <img src="./assets/juannita.jpeg" alt="Dr. Joannita Kabemba"
                          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                     <div class="team-fallback"><i class="fas fa-user-doctor"></i></div>
                 </div>
