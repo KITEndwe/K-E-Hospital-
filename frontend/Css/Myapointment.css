@@ -537,10 +537,10 @@ img {
     padding: 0.65rem 1.5rem;
     border-radius: 50px;
     border: 1.5px solid #e2e8f0;
-    background: #fff;
+    background-color: blue;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #64748b;
+    color: white;
     cursor: pointer;
     font-family: 'Outfit', sans-serif;
 }
@@ -565,6 +565,32 @@ img {
     background: #dc2626;
 }
 
+/* Payment Info Modal Styles */
+.payment-modal-icon {
+    background: #ffedd5;
+    color: #b45309;
+}
+
+.payment-modal-icon i {
+    font-size: 1.8rem;
+}
+
+.contact-note {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 0.9rem;
+    margin: 0.75rem 0 0.5rem;
+    font-size: 0.8rem;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+
+.contact-note i {
+    color: #5f6fff;
+    margin-right: 6px;
+}
+
+/* Footer */
 footer {
     background: #fff;
     border-top: 1px solid #ebebeb;
@@ -652,6 +678,7 @@ footer {
     margin: 0 auto;
 }
 
+/* Responsive */
 @media (max-width: 700px) {
     .apt-card {
         flex-direction: column;
@@ -690,102 +717,4 @@ footer {
     .tracker-label {
         font-size: 0.58rem;
     }
-}
-
-/* --- NEW STYLE FOR PAYMENT INFO MODAL (same design language, no design change) --- */
-.payment-modal-icon {
-    background: #ffedd5;
-    color: #b45309;
-}
-.payment-modal-icon i {
-    font-size: 1.8rem;
-}
-.contact-note {
-    background: #f8fafc;
-    border-radius: 14px;
-    padding: 0.9rem;
-    margin: 0.75rem 0 0.5rem;
-    font-size: 0.8rem;
-    color: #334155;
-    border: 1px solid #e2e8f0;
-}
-.contact-note i {
-    color: #5f6fff;
-    margin-right: 6px;
-}
-.btn-dismiss {
-    background: #5f6fff;
-    border: none;
-    padding: 0.65rem 1.5rem;
-    border-radius: 50px;
-    color: white;
-    font-weight: 600;
-    font-family: 'Outfit', sans-serif;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-dismiss:hover {
-    background: #4a5af0;
-}
-
-.payment-modal-icon {
-    background: #ffedd5;
-    color: #b45309;
-}
-
-.payment-modal-icon i {
-    font-size: 1.8rem;
-}
-
-.contact-note {
-    background: #f8fafc;
-    border-radius: 14px;
-    padding: 0.9rem;
-    margin: 0.75rem 0 0.5rem;
-    font-size: 0.8rem;
-    color: #334155;
-    border: 1px solid #e2e8f0;
-}
-
-.contact-note i {
-    color: #5f6fff;
-    margin-right: 6px;
-}
-
-/* IMPORTANT: Specific button style for dismiss button */
-.btn-dismiss {
-    background: #5f6fff !important;
-    border: none !important;
-    padding: 0.65rem 1.5rem !important;
-    border-radius: 50px !important;
-    color: white !important;
-    font-weight: 600 !important;
-    font-family: 'Outfit', sans-serif !important;
-    cursor: pointer !important;
-    transition: all 0.2s !important;
-    display: inline-block !important;
-    text-align: center !important;
-    text-decoration: none !important;
-    font-size: 0.875rem !important;
-}
-
-.btn-dismiss:hover {
-    background: #4a5af0 !important;
-    transform: translateY(-1px) !important;
-}
-
-/* Ensure modal buttons aren't affected by other styles */
-.modal-box button {
-    margin: 0;
-}
-
-/* Override any conflicting button styles */
-.modal-actions .btn-dismiss {
-    background: #5f6fff;
-    border: none;
-    color: white;
-}
-
-.modal-actions .btn-dismiss:hover {
-    background: #4a5af0;
 }

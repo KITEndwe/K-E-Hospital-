@@ -13,7 +13,7 @@ $password = '';
 
 $user_id       = $_SESSION['user_id'];
 $user_name     = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : '';
-$current_page  = 'Myappointment.php';
+$current_page  = 'Myappointments.php';
 $profile_image = isset($_SESSION['profile_image']) ? $_SESSION['profile_image'] : '';
 $is_logged_in  = true;
 
@@ -261,34 +261,24 @@ function fmtTime($t) {
                 <!-- ═══ STATUS TRACKER ═══ -->
                 <?php if ($status !== 'Cancelled'): ?>
                 <div class="status-tracker" style="margin-top:0.875rem;">
-
-                    <!-- Step 1: Booked -->
                     <div class="tracker-step <?php echo $s_booked; ?>">
                         <div class="tracker-icon"><?php echo $icon_booked; ?></div>
                         <div class="tracker-label">Booked</div>
                     </div>
-
                     <div class="tracker-line <?php echo $s_line1; ?>"></div>
-
-                    <!-- Step 2: Confirmed by doctor -->
                     <div class="tracker-step <?php echo $s_confirmed; ?>">
                         <div class="tracker-icon"><?php echo $icon_confirmed; ?></div>
                         <div class="tracker-label">
                             <?php echo ($status === 'Pending') ? 'Awaiting' : 'Confirmed'; ?>
                         </div>
                     </div>
-
                     <div class="tracker-line <?php echo $s_line2; ?>"></div>
-
-                    <!-- Step 3: Completed -->
                     <div class="tracker-step <?php echo $s_completed; ?>">
                         <div class="tracker-icon"><?php echo $icon_completed; ?></div>
                         <div class="tracker-label">Completed</div>
                     </div>
-
                 </div>
-
-                <?php else: /* Cancelled */ ?>
+                <?php else: ?>
                 <div style="margin-top:0.75rem;">
                     <span class="status-pill pill-cancelled">
                         <i class="fas fa-times-circle"></i> Appointment Cancelled
@@ -296,7 +286,7 @@ function fmtTime($t) {
                 </div>
                 <?php endif; ?>
 
-                <!-- Payment confirmed notice (shows when doctor marks Completed) -->
+                <!-- Payment confirmed notice -->
                 <?php if ($status === 'Completed' && $is_paid): ?>
                 <div class="payment-notice">
                     <i class="fas fa-receipt"></i>
@@ -310,25 +300,25 @@ function fmtTime($t) {
 
             <!-- Actions -->
             <div class="apt-actions">
-
                 <?php if ($status === 'Cancelled'): ?>
                     <!-- No actions for cancelled -->
-
                 <?php elseif ($status === 'Completed'): ?>
                     <div class="btn-paid"><i class="fas fa-check"></i> Paid</div>
-                    <!-- Completed appointments cannot be cancelled -->
-
                 <?php else: ?>
-                    <!-- Pending or Confirmed -->
+                    <!-- Pending or Confirmed - Payment button triggers modal -->
                     <?php if ($pay_status === 'Pending'): ?>
-                    <button type="button" class="btn-pay" onclick="showPaymentUnavailableModal('<?php echo addslashes($apt['doctor_name']); ?>')">
+                    <button type="button" class="btn-pay" onclick="showPaymentModal('<?php echo addslashes($apt['doctor_name']); ?>')">
                         <i class="fas fa-credit-card"></i> Pay here
                     </button>
                     <?php endif; ?>
-
-                    <form method="POST" action="" onsubmit="return doCancel(event, <?php echo $apt['appointment_id']; ?>)">
+                    
+                    <!-- Cancel button triggers cancel modal -->
+                    <form method="POST" action="" id="cancel-form-<?php echo $apt['appointment_id']; ?>">
                         <input type="hidden" name="appointment_id" value="<?php echo $apt['appointment_id']; ?>">
-                        <button type="submit" name="cancel_appointment" class="btn-cancel">Cancel appointment</button>
+                        <input type="hidden" name="cancel_appointment" value="1">
+                        <button type="button" class="btn-cancel" onclick="openCancelModal(<?php echo $apt['appointment_id']; ?>)">
+                            Cancel appointment
+                        </button>
                     </form>
                 <?php endif; ?>
 
@@ -340,7 +330,6 @@ function fmtTime($t) {
                     echo '<i class="fas ' . $ic . '"></i> ' . htmlspecialchars($status);
                     ?>
                 </span>
-
             </div>
         </div>
         <?php endforeach; ?>
@@ -349,22 +338,21 @@ function fmtTime($t) {
 
 </div><!-- /.page-wrap -->
 
-
-<!-- Cancel modal -->
+<!-- Cancel Modal -->
 <div class="modal-backdrop" id="cancelModal">
     <div class="modal-box">
         <div class="modal-icon"><i class="fas fa-calendar-xmark"></i></div>
         <h3>Cancel Appointment?</h3>
         <p>Are you sure you want to cancel this appointment?<br>This action cannot be undone.</p>
         <div class="modal-actions">
-            <button class="btn-modal-keep" onclick="closeModal()">Keep it</button>
+            <button class="btn-modal-keep" onclick="closeCancelModal()">Keep it</button>
             <button class="btn-modal-confirm" id="modalConfirmBtn">Yes, Cancel</button>
         </div>
     </div>
 </div>
 
-<!-- Replace the payment modal div with this: -->
-<div class="modal-backdrop" id="paymentInfoModal">
+<!-- Payment Unavailable Modal -->
+<div class="modal-backdrop" id="paymentModal">
     <div class="modal-box">
         <div class="modal-icon payment-modal-icon"><i class="fas fa-credit-card"></i></div>
         <h3>Online Payment Unavailable</h3>
@@ -374,11 +362,10 @@ function fmtTime($t) {
             <i class="fas fa-phone-alt"></i> <strong>Contact:</strong> +260 7610 16446
         </div>
         <div class="modal-actions">
-            <button class="btn-modal-keep" style="background-color:#5f6fff; color:white;" onclick="closePaymentModal()">Got it, I'll contact</button>
+            <button style="background-color: blue;" class="btn-modal-keep" onclick="closePaymentModal()">Got it, I'll contact</button>
         </div>
     </div>
 </div>
-
 
 <!-- Footer -->
 <footer>
@@ -412,70 +399,70 @@ function fmtTime($t) {
     </div>
 </footer>
 
-
 <script>
-/* ── Cancel modal ── */
-var pendingForm = null;
+/* ── Cancel Modal Functions ── */
+var pendingCancelId = null;
 
-function doCancel(e, aptId) {
-    e.preventDefault();
-    pendingForm = e.target;
+function openCancelModal(aptId) {
+    pendingCancelId = aptId;
     document.getElementById('cancelModal').classList.add('active');
     document.body.style.overflow = 'hidden';
-    return false;
+}
+
+function closeCancelModal() {
+    document.getElementById('cancelModal').classList.remove('active');
+    document.body.style.overflow = '';
+    pendingCancelId = null;
 }
 
 document.getElementById('modalConfirmBtn').addEventListener('click', function() {
-    if (pendingForm) {
-        document.body.style.overflow = '';
-        pendingForm.submit();
+    if (pendingCancelId !== null) {
+        var form = document.getElementById('cancel-form-' + pendingCancelId);
+        if (form) {
+            document.body.style.overflow = '';
+            HTMLFormElement.prototype.submit.call(form);
+        }
+        closeCancelModal();
     }
 });
 
-function closeModal() {
-    document.getElementById('cancelModal').classList.remove('active');
-    document.body.style.overflow = '';
-    pendingForm = null;
-}
-
 document.getElementById('cancelModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
+    if (e.target === this) closeCancelModal();
 });
 
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Escape') {
+        if (document.getElementById('cancelModal').classList.contains('active')) {
+            closeCancelModal();
+        }
+        if (document.getElementById('paymentModal').classList.contains('active')) {
+            closePaymentModal();
+        }
+    }
 });
 
-/* ── Payment Unavailable Modal ── */
-function showPaymentUnavailableModal(doctorName) {
+/* ── Payment Modal Functions ── */
+function showPaymentModal(doctorName) {
     document.getElementById('modalDoctorName').textContent = doctorName;
-    document.getElementById('paymentInfoModal').classList.add('active');
+    document.getElementById('paymentModal').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
 function closePaymentModal() {
-    document.getElementById('paymentInfoModal').classList.remove('active');
+    document.getElementById('paymentModal').classList.remove('active');
     document.body.style.overflow = '';
 }
 
-document.getElementById('paymentInfoModal').addEventListener('click', function(e) {
+document.getElementById('paymentModal').addEventListener('click', function(e) {
     if (e.target === this) closePaymentModal();
 });
 
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && document.getElementById('paymentInfoModal').classList.contains('active')) {
-        closePaymentModal();
-    }
-});
-
-/* ── Tab filter ── */
+/* ── Tab Filter ── */
 function filterApts(status, btn) {
-    /* Update active tab */
     var tabs = document.querySelectorAll('.tab-btn');
     for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
     btn.classList.add('active');
 
-    /* Show / hide cards */
     var cards = document.querySelectorAll('.apt-card');
     for (var j = 0; j < cards.length; j++) {
         var card = cards[j];
@@ -486,7 +473,6 @@ function filterApts(status, btn) {
         }
     }
 
-    /* Empty message */
     var visible = document.querySelectorAll('.apt-card:not(.hidden)');
     var existing = document.getElementById('noApts');
     if (existing) existing.remove();
@@ -499,7 +485,7 @@ function filterApts(status, btn) {
     }
 }
 
-/* ── Auto-refresh every 30s to pick up doctor status changes ── */
+/* ── Auto-refresh every 30s ── */
 setTimeout(function() {
     window.location.reload();
 }, 30000);
