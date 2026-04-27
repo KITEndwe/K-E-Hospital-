@@ -432,16 +432,16 @@ CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);
 
 
 --Doctor credentials (all 10):
---doc1' => ['email' => 'mwilabanda@kehospital.co.zm', 'password' => 'MwilaBanda@2024'
---doc2' => ['email' => 'mutintaphiri@kehospital.co.zm', 'password' => 'MutintaPhiri@2024'
---doc3' => ['email' => 'luyandozulu@kehospital.co.zm', 'password' => 'LuyandoZulu@2024'],
---doc4' => ['email' => 'christophertembo@kehospital.co.zm', 'password' => 'Christopher@2024'
---doc5' => ['email' => 'chipomwansa@kehospital.co.zm', 'password' => 'ChipoMwansa@2024'],
---doc6' => ['email' => 'kelvinmulenga@kehospital.co.zm', 'password' => 'KelvinMulenga@2024'
---doc7' => ['email' => 'patricktembo@kehospital.co.zm', 'password' => 'PatrickTembo@2024'
---doc8' => ['email' => 'lilianchanda@kehospital.co.zm', 'password' => 'LillianChanda@2024'
---doc9' => ['email' => 'thandiwekapasa@kehospital.co.zm', 'password' => 'Thandiwekapasa@2024'
---doc10' => ['email' => 'josephmwansa@kehospital.co.zm', 'password' => 'JosephMwansa@2024'
+--email => mwilabanda@kehospital.co.zm, password => MwilaBanda@2024
+--email => mutintaphiri@kehospital.co.zm, password => MutintaPhiri@2024
+--email => luyandozulu@kehospital.co.zm, password => LuyandoZulu@2024
+--email => christophertembo@kehospital.co.zm, password => Christopher@2024
+--email => chipomwansa@kehospital.co.zm, password => ChipoMwansa@2024
+--email => kelvinmulenga@kehospital.co.zm, password => KelvinMulenga@2024
+--email => patricktembo@kehospital.co.zm, password => PatrickTembo@2024
+--email => lilianchanda@kehospital.co.zm, password => LillianChanda@2024
+--email => thandiwekapasa@kehospital.co.zm, password => Thandiwekapasa@2024
+--email => josephmwansa@kehospital.co.zm, password => JosephMwansa@2024
 
 
 
