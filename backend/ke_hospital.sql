@@ -433,122 +433,65 @@ CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);
 
 
 --Doctor credentials (all 10):
---Email                   Password
---doc1@kehospital.co.zm  MwilaDoc@2024
---doc2@kehospital.co.zm  MutintaDoc@2024
---doc3@kehospital.co.zm  LuyandoDoc@2024
---doc4@kehospital.co.zm  ChrisDoc@2024
---doc5@kehospital.co.zm  ChipoDoc@2024
---doc6@kehospital.co.zm  KelvinDoc@2024
---doc7@kehospital.co.zm  PatrickDoc@2024
---doc8@kehospital.co.zm  LillianDoc@2024
---doc9@kehospital.co.zm  ThandDoc@2024
---doc10@kehospital.co.zm JosephDoc@2024 
+--doc1' => ['email' => 'mwilabanda@kehospital.co.zm', 'password' => 'MwilaBanda@2024'
+--doc2' => ['email' => 'mutintaphiri@kehospital.co.zm', 'password' => 'MutintaPhiri@2024'
+--doc3' => ['email' => 'luyandozulu@kehospital.co.zm', 'password' => 'LuyandoZulu@2024'],
+--doc4' => ['email' => 'christophertembo@kehospital.co.zm', 'password' => 'Christopher@2024'
+--doc5' => ['email' => 'chipomwansa@kehospital.co.zm', 'password' => 'ChipoMwansa@2024'],
+--doc6' => ['email' => 'kelvinmulenga@kehospital.co.zm', 'password' => 'KelvinMulenga@2024'
+--doc7' => ['email' => 'patricktembo@kehospital.co.zm', 'password' => 'PatrickTembo@2024'
+--doc8' => ['email' => 'lilianchanda@kehospital.co.zm', 'password' => 'LillianChanda@2024'
+--doc9' => ['email' => 'thandiwekapasa@kehospital.co.zm', 'password' => 'Thandiwekapasa@2024'
+--doc10' => ['email' => 'josephmwansa@kehospital.co.zm', 'password' => 'JosephMwansa@2024'
 
 
 
--- all doctors and their emails set correctly
+--updated emails and passwords for doctors 
 UPDATE doctors SET 
     email = CASE doctor_id
-        WHEN 'doc1' THEN 'doc1@kehospital.co.zm'
-        WHEN 'doc2' THEN 'doc2@kehospital.co.zm'
-        WHEN 'doc3' THEN 'doc3@kehospital.co.zm'
-        WHEN 'doc4' THEN 'doc4@kehospital.co.zm'
-        WHEN 'doc5' THEN 'doc5@kehospital.co.zm'
-        WHEN 'doc6' THEN 'doc6@kehospital.co.zm'
-        WHEN 'doc7' THEN 'doc7@kehospital.co.zm'
-        WHEN 'doc8' THEN 'doc8@kehospital.co.zm'
-        WHEN 'doc9' THEN 'doc9@kehospital.co.zm'
-        WHEN 'doc10' THEN 'doc10@kehospital.co.zm'
+        WHEN 'doc1' THEN 'mwilabanda@kehospital.co.zm'
+        WHEN 'doc2' THEN 'mutintaphiri@kehospital.co.zm'
+        WHEN 'doc3' THEN 'luyandozulu@kehospital.co.zm'
+        WHEN 'doc4' THEN 'christophertembo@kehospital.co.zm'
+        WHEN 'doc5' THEN 'chipomwansa@kehospital.co.zm'
+        WHEN 'doc6' THEN 'kelvinmulenga@kehospital.co.zm'
+        WHEN 'doc7' THEN 'patricktembo@kehospital.co.zm'
+        WHEN 'doc8' THEN 'lilianchanda@kehospital.co.zm'
+        WHEN 'doc9' THEN 'thandiwekapasa@kehospital.co.zm'
+        WHEN 'doc10' THEN 'josephmwansa@kehospital.co.zm'
     END
 WHERE doctor_id IN ('doc1','doc2','doc3','doc4','doc5','doc6','doc7','doc8','doc9','doc10');
 
--- Update passwords with bcrypt hashes
--- Password:                     MwilaDoc@2024
-UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc1';
+-- Updated passwords 
+-- Password: MwilaBanda@2024
+UPDATE doctors SET password = '$2y$10$[GENERATE_HASH_FOR_MwilaBanda@2024]' WHERE doctor_id = 'doc1';
 
--- Password: MutintaDoc@2024  
-UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc2';
+-- Password: MutintaPhiri@2024  
+UPDATE doctors SET password = '$2y$10$[GENERATE_HASH_FOR_MutintaPhiri@2024]' WHERE doctor_id = 'doc2';
 
--- Password: LuyandoDoc@2024
-UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc3';
+-- Password: LuyandoZulu@2024
+UPDATE doctors SET password = '$2y$10$[GENERATE_HASH_FOR_LuyandoZulu@2024]' WHERE doctor_id = 'doc3';
 
--- Password: ChrisDoc@2024
-UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc4';
+-- Password: Christopher@2024
+UPDATE doctors SET password = '$2y$10$[GENERATE_HASH_FOR_Christopher@2024]' WHERE doctor_id = 'doc4';
 
--- Password: ChipoDoc@2024
-UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc5';
+-- Password: ChipoMwansa@2024
+UPDATE doctors SET password = '$2y$10$[GENERATE_HASH_FOR_ChipoMwansa@2024]' WHERE doctor_id = 'doc5';
 
--- Password: KelvinDoc@2024
-UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc6';
+-- Password: KelvinMulenga@2024
+UPDATE doctors SET password = '$2y$10$[GENERATE_HASH_FOR_KelvinMulenga@2024]' WHERE doctor_id = 'doc6';
 
--- Password: PatrickDoc@2024
-UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc7';
+-- Password: PatrickTembo@2024
+UPDATE doctors SET password = '$2y$10$[GENERATE_HASH_FOR_PatrickTembo@2024]' WHERE doctor_id = 'doc7';
 
--- Password: LillianDoc@2024
-UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc8';
+-- Password: LillianChanda@2024
+UPDATE doctors SET password = '$2y$10$[GENERATE_HASH_FOR_LillianChanda@2024]' WHERE doctor_id = 'doc8';
 
--- Password: ThandDoc@2024
-UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc9';
+-- Password: Thandiwekapasa@2024
+UPDATE doctors SET password = '$2y$10$[GENERATE_HASH_FOR_Thandiwekapasa@2024]' WHERE doctor_id = 'doc9';
 
--- Password: JosephDoc@2024
-UPDATE doctors SET password = '$2y$10$YourHashWillBeGeneratedByScript' WHERE doctor_id = 'doc10';
-
-
---Hash passwords
--- After running the PHP script once, you'll get actual hashes like these:
--- Replace 'YOUR_GENERATED_HASH_HERE' with the actual hash from the PHP script output
-
-UPDATE doctors SET 
-    email = 'doc1@kehospital.co.zm',
-    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH1'
-WHERE doctor_id = 'doc1';
-
-UPDATE doctors SET 
-    email = 'doc2@kehospital.co.zm',
-    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH2'
-WHERE doctor_id = 'doc2';
-
-UPDATE doctors SET 
-    email = 'doc3@kehospital.co.zm',
-    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH3'
-WHERE doctor_id = 'doc3';
-
-UPDATE doctors SET 
-    email = 'doc4@kehospital.co.zm',
-    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH4'
-WHERE doctor_id = 'doc4';
-
-UPDATE doctors SET 
-    email = 'doc5@kehospital.co.zm',
-    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH5'
-WHERE doctor_id = 'doc5';
-
-UPDATE doctors SET 
-    email = 'doc6@kehospital.co.zm',
-    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH6'
-WHERE doctor_id = 'doc6';
-
-UPDATE doctors SET 
-    email = 'doc7@kehospital.co.zm',
-    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH7'
-WHERE doctor_id = 'doc7';
-
-UPDATE doctors SET 
-    email = 'doc8@kehospital.co.zm',
-    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH8'
-WHERE doctor_id = 'doc8';
-
-UPDATE doctors SET 
-    email = 'doc9@kehospital.co.zm',
-    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH9'
-WHERE doctor_id = 'doc9';
-
-UPDATE doctors SET 
-    email = 'doc10@kehospital.co.zm',
-    password = '$2y$10$9XqZqZqZqZqZqZqZqZqZqOeXAMPLEHASH10'
-WHERE doctor_id = 'doc10';
-
+-- Password: JosephMwansa@2024
+UPDATE doctors SET password = '$2y$10$[GENERATE_HASH_FOR_JosephMwansa@2024]' WHERE doctor_id = 'doc10';
 
 
 

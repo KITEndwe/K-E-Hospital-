@@ -11,16 +11,16 @@ try {
     
     // Doctor credentials mapping
     $doctors = [
-        'doc1' => ['email' => 'doc1@kehospital.co.zm', 'password' => 'MwilaDoc@2024'],
-        'doc2' => ['email' => 'doc2@kehospital.co.zm', 'password' => 'MutintaDoc@2024'],
-        'doc3' => ['email' => 'doc3@kehospital.co.zm', 'password' => 'LuyandoDoc@2024'],
-        'doc4' => ['email' => 'doc4@kehospital.co.zm', 'password' => 'ChrisDoc@2024'],
-        'doc5' => ['email' => 'doc5@kehospital.co.zm', 'password' => 'ChipoDoc@2024'],
-        'doc6' => ['email' => 'doc6@kehospital.co.zm', 'password' => 'KelvinDoc@2024'],
-        'doc7' => ['email' => 'doc7@kehospital.co.zm', 'password' => 'PatrickDoc@2024'],
-        'doc8' => ['email' => 'doc8@kehospital.co.zm', 'password' => 'LillianDoc@2024'],
-        'doc9' => ['email' => 'doc9@kehospital.co.zm', 'password' => 'ThandDoc@2024'],
-        'doc10' => ['email' => 'doc10@kehospital.co.zm', 'password' => 'JosephDoc@2024']
+        'doc1' => ['email' => 'mwilabanda@kehospital.co.zm', 'password' => 'MwilaBanda@2024'],
+        'doc2' => ['email' => 'mutintaphiri@kehospital.co.zm', 'password' => 'MutintaPhiri@2024'],
+        'doc3' => ['email' => 'luyandozulu@kehospital.co.zm', 'password' => 'LuyandoZulu@2024'],
+        'doc4' => ['email' => 'christophertembo@kehospital.co.zm', 'password' => 'Christopher@2024'],
+        'doc5' => ['email' => 'chipomwansa@kehospital.co.zm', 'password' => 'ChipoMwansa@2024'],
+        'doc6' => ['email' => 'kelvinmulenga@kehospital.co.zm', 'password' => 'KelvinMulenga@2024'],
+        'doc7' => ['email' => 'patricktembo@kehospital.co.zm', 'password' => 'PatrickTembo@2024'],
+        'doc8' => ['email' => 'lilianchanda@kehospital.co.zm', 'password' => 'LillianChanda@2024'],
+        'doc9' => ['email' => 'thandiwekapasa@kehospital.co.zm', 'password' => 'Thandiwekapasa@2024'],
+        'doc10' => ['email' => 'josephmwansa@kehospital.co.zm', 'password' => 'JosephMwansa@2024']
     ];
     
     echo "<h2>Updating Doctor Passwords</h2>";
