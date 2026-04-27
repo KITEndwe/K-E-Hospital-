@@ -1,5 +1,5 @@
 -- Create database
-CREATE DATABASE IF NOT EXISTS ke_hospital;
+CREATE DATABASE ke_hospital;
 USE ke_hospital;
 
 -- =============================================
@@ -252,7 +252,6 @@ INSERT INTO doctor_schedule (doctor_id, day_of_week, start_time, end_time) VALUE
 -- =============================================
 -- INSERT DEFAULT ADMIN (with hashed password example)
 -- =============================================
--- Note: In production, always hash passwords using bcrypt
 -- The password 'admin123' hashed with bcrypt would look like: $2b$10$YourHashedPasswordHere
 INSERT INTO admin (full_name, email, password, role, profile_image, phone) VALUES
 ('K&E Hospital Admin', 'admin@kehospital.com', '$2b$10$YourHashedPasswordHere', 'Super Admin', '/assets/admin/admin-avatar.jpg', '+260 123 456789');
