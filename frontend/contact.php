@@ -23,9 +23,9 @@ $error_message = '';
 ══════════════════════════════════════════════ */
 
 /* ── CHANGE THESE TWO VALUES ONLY ── */
-define('SMTP_USER',    'elijahmwange55@gmail.com'); // Your Gmail
+define('SMTP_USER',    'kalengamuma316@gmail.com'); // Your Gmail
 define('SMTP_PASS',    'efar hrde dapx phdy');   // Gmail App Password (16 chars)
-define('SMTP_TO',      'elijahmwange55@gmail.com'); // Where emails arrive
+define('SMTP_TO',      'kalengamuma316@gmail.com'); // Where emails arrive
 define('HOSPITAL_NAME','K&E Hospital');
 
 
