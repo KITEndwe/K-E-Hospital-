@@ -434,7 +434,7 @@ if ($is_logged_in && empty($profile_image)) {
                 <div ><img src="assets/logo.svg" width="100px" alt=""></div>
                 
             </div>
-            <p class="footer-desc">Your Health, Our Priority. Bridging the Gap Between Zambian Patients and Doctors with Quality Healthcare at Your Fingertips, Anywhere in Zambia.</p>
+            <p class="footer-desc">Your health comes first. We connect patients across Zambia with qualified doctors, delivering quality healthcare wherever you are, right at your fingertips.</p>
         </div>
         <div class="footer-col">
             <h4>Company</h4>
