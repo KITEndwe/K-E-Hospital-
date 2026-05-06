@@ -350,7 +350,7 @@ function resolveImage($path, $type = 'doctor') {
 
                             <td>
                                 <div class="action-buttons">
-                                    <a href="appointment-details.php?id=<?php echo $apt['appointment_id']; ?>" class="action-btn" title="View">
+                                    <a href="patients.php" class="action-btn" title="View">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <button class="action-btn delete" onclick="deleteAppointment(<?php echo $apt['appointment_id']; ?>)" title="Delete">

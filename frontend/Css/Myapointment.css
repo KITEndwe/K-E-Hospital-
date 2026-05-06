@@ -158,7 +158,7 @@ img {
     background: linear-gradient(160deg, #dce3ff, #eaf0ff);
     flex-shrink: 0;
     display: flex;
-    align-items: flex-end;
+    align-items: center;     /* ← centers image vertically */
     justify-content: center;
 }
 
@@ -166,7 +166,7 @@ img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: top center;
+    object-position: top center;   /* keep for desktop */
     display: block;
 }
 
@@ -678,30 +678,46 @@ footer {
     margin: 0 auto;
 }
 
-/* Responsive */
+/* FIND the @media (max-width: 700px) block and REPLACE with: */
 @media (max-width: 700px) {
     .apt-card {
         flex-direction: column;
         gap: 0.875rem;
     }
+
+    /* ── FIXED: Switch to a side-by-side row on mobile ── */
     .apt-photo {
-        width: 100%;
-        height: 170px;
+        width: 80px;           /* compact portrait on the left */
+        height: 90px;
+        border-radius: 10px;
+        flex-shrink: 0;
+        align-items: center;
     }
+
+    /* Make the card horizontal again on mobile but compact */
+    .apt-card {
+        flex-direction: row;   /* keep doctor thumbnail on left */
+        align-items: flex-start;
+        gap: 0.875rem;
+    }
+
     .apt-actions {
         flex-direction: row;
         flex-wrap: wrap;
         align-items: center;
         width: 100%;
     }
+
     .btn-pay, .btn-paid, .btn-cancel {
         min-width: auto;
         flex: 1;
     }
+
     .footer-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
+
     .status-tracker {
         gap: 0;
     }
@@ -711,10 +727,15 @@ footer {
     .page-wrap {
         padding: 1.75rem 5% 3rem;
     }
+
+    /* Keep photo portrait-shaped, never full-width banner */
     .apt-photo {
-        height: 140px;
+        width: 70px;
+        height: 80px;
     }
+
     .tracker-label {
         font-size: 0.58rem;
     }
 }
+
