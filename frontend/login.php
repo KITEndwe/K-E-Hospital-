@@ -444,6 +444,23 @@ function checkStrength(pw) {
     if (pw.length === 0) {
         fill.style.width = '0%';
         fill.style.background = 'transparent';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         label.textContent = '';
         return;
     }
